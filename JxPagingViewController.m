@@ -1,9 +1,8 @@
 //
 //  JxPagingViewController.m
-//  Bikes1000
 //
 //  Created by Jeanette Müller on 21.03.14.
-//  Copyright (c) 2014 Motorpresse Stuttgart. All rights reserved.
+//  MIT Licence
 //
 
 #import "JxPagingViewController.h"

@@ -1,9 +1,8 @@
 //
-//  NSObject.m
-//  eventapp
+//  NSObject+Blocks.m
 //
 //  Created by Jeanette Müller on 10.09.13.
-//
+//  MIT Licence
 //
 
 #import "NSObject+Blocks.h"

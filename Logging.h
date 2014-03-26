@@ -1,3 +1,11 @@
+//
+//  Logging.h
+//
+//  Created by Jeanette Müller on 04.09.13.
+//  MIT Licence
+//
+
+
 //DEBUG LOG
 
 #define DLog(fmt, ...)                               NSLog((@">>> %s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)

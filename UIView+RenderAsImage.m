@@ -2,7 +2,7 @@
 //  UIView+RenderAsImage.m
 //
 //  Created by Jeanette Müller on 25.03.14.
-//  Free for use
+//  MIT Licence
 //
 
 #import "UIView+RenderAsImage.h"

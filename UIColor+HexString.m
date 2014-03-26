@@ -1,9 +1,8 @@
 //
 //  UIColor+HexString.m
-//  mps_news
 //
 //  Created by Jeanette Müller on 23.04.12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  MIT Licence
 //
 
 #import "UIColor+HexString.h"
