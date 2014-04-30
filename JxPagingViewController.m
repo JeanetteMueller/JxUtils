@@ -10,8 +10,8 @@
 
 @interface JxPagingViewController ()
 
-@property (strong, nonatomic) IBOutlet UIPageViewController *pageViewController;
-@property (strong, nonatomic) IBOutlet UIButton *closeButton;
+
+
 @end
 
 @implementation JxPagingViewController

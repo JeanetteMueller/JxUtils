@@ -6,6 +6,7 @@
 //
 
 #import "JxImageCache.h"
+#import "Logging.h"
 
 @implementation JxImageCache
 
@@ -16,23 +17,29 @@
     dispatch_once(&oncePredicate, ^{
         _imageCache = [[JxImageCache alloc] init];
         _imageCache.useCache = YES;
+        
+        
+        [_imageCache setCountLimit:50];
+        [_imageCache setTotalCostLimit:150000];
+        [_imageCache setEvictsObjectsWithDiscardedContent:YES];
+        
+        
     });
     
     return _imageCache;
 }
-- (void)useImageCache:(BOOL)use{
-    _useCache = use;
-}
 - (UIImage *)cachedImageForRequest:(NSURL *)url {
-    
+    LLog();
 	return [self objectForKey:[url absoluteString]];
 }
 - (void)cacheImage:(UIImage *)image forRequest:(NSURL *)url{
+    LLog();
     if (_useCache && image && url) {
         [self setObject:image forKey:[url absoluteString]];
     }
 }
 - (void)clearCache{
+    LLog();
     [self removeAllObjects];
 }
 @end

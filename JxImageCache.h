@@ -13,7 +13,6 @@
 @property (nonatomic, readwrite) BOOL useCache;
 
 + (JxImageCache *)sharedImageCache;
-- (void)useImageCache:(BOOL)use;
 - (UIImage *)cachedImageForRequest:(NSURL *)url;
 - (void)cacheImage:(UIImage *)image forRequest:(NSURL *)url;
 - (void)clearCache;
