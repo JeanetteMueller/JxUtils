@@ -24,7 +24,12 @@
     }
     
     // Render the view into the current graphics context
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    /* iOS 7 */
+    if ([self respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)]){
+        [self drawViewHierarchyInRect:self.bounds afterScreenUpdates:NO];
+    }else{ /* iOS 6 */
+        [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    }
     
     // Create an image from the current graphics context
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
