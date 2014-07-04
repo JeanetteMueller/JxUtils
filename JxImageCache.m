@@ -29,17 +29,14 @@
     return _imageCache;
 }
 - (UIImage *)cachedImageForRequest:(NSURL *)url {
-    LLog();
 	return [self objectForKey:[url absoluteString]];
 }
 - (void)cacheImage:(UIImage *)image forRequest:(NSURL *)url{
-    LLog();
     if (_useCache && image && url) {
         [self setObject:image forKey:[url absoluteString]];
     }
 }
 - (void)clearCache{
-    LLog();
     [self removeAllObjects];
 }
 @end

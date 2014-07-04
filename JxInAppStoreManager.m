@@ -47,10 +47,19 @@ static NSString* const KEYCHAIN_SERVICE_NAME = @"MY_STORE_NAME";
         
 		NSError* error;
 		NSString* pass = [SFHFKeychainUtils getPasswordForUsername:KEYCHAIN_PRODUCT_ID_USER andServiceName:KEYCHAIN_SERVICE_NAME error:&error];
-		if (pass != nil)
+        
+        NSLog(@"pass: %@", pass);
+		if (pass != nil){
+            
+            [SFHFKeychainUtils storeUsername:KEYCHAIN_PRODUCT_ID_USER andPassword:pass forServiceName:KEYCHAIN_SERVICE_NAME updateExisting:YES error:nil];
+            
 			alreadyPurchasedProductIds = [[NSMutableArray alloc] initWithArray:[pass componentsSeparatedByString: @"|"]];
-		else
+        }else{
 			alreadyPurchasedProductIds = [NSMutableArray new];
+        }
+        
+        NSLog(@"alreadyPurchasedProductIds: %@", alreadyPurchasedProductIds);
+        
         
 		[self checkNeedsRestore];
         
@@ -213,7 +222,6 @@ static NSString* const KEYCHAIN_SERVICE_NAME = @"MY_STORE_NAME";
 }
 
 - (BOOL)hasAlreadyPurchased:(NSSet*)productIdentifiers{
-    LLog();
 	BOOL donePurchased = NO;
 	for (NSString* pid in productIdentifiers){
 		if ([alreadyPurchasedProductIds containsObject:pid] ) {
@@ -222,8 +230,8 @@ static NSString* const KEYCHAIN_SERVICE_NAME = @"MY_STORE_NAME";
             
 		}
 	}
+    DLog(@"donePurchased %d", donePurchased);
 	return donePurchased;
-    
 }
 
 -(BOOL) canPurchase:(NSString *)productIdentifier{
