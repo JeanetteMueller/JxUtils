@@ -13,7 +13,7 @@
 }
 
 - (NSString *)activityType{
-    return @"de.motorpresse.actifity.browserSharing";
+    return @"de.themaverick.actifity.browserSharing";
 }
 - (NSString *)activityTitle{
     return @"Adresse im Safari öffnen";
