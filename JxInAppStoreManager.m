@@ -51,7 +51,7 @@ static NSString* const KEYCHAIN_SERVICE_NAME = @"MY_STORE_NAME";
         NSLog(@"pass: %@", pass);
 		if (pass != nil){
             
-            [SFHFKeychainUtils storeUsername:KEYCHAIN_PRODUCT_ID_USER andPassword:pass forServiceName:KEYCHAIN_SERVICE_NAME updateExisting:YES error:nil];
+            [SFHFKeychainUtils storeUsername:KEYCHAIN_PRODUCT_ID_USER andPassword:pass forServiceName:KEYCHAIN_SERVICE_NAME updateExisting:YES error:&error];
             
 			alreadyPurchasedProductIds = [[NSMutableArray alloc] initWithArray:[pass componentsSeparatedByString: @"|"]];
         }else{
