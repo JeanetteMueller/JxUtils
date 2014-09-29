@@ -44,7 +44,7 @@
     _pageViewController.view.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:_pageViewController.view];
     
-    [self.pageViewController.view.subviews[0] setDelegate:self];
+    [(UIScrollView *)self.pageViewController.view.subviews[0] setDelegate:self];
     
     [_pageViewController setViewControllers:@[[_controllers firstObject]] direction:UIPageViewControllerNavigationDirectionForward animated:NO completion:NULL];
     _pageViewController.dataSource = self;
