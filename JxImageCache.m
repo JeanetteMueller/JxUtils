@@ -11,24 +11,28 @@
 @implementation JxImageCache
 
 + (JxImageCache *)sharedImageCache {
-    static JxImageCache *_imageCache = nil;
-    static dispatch_once_t oncePredicate;
+    static JxImageCache *sharedInstance = nil;
+    static dispatch_once_t pred;
     
-    dispatch_once(&oncePredicate, ^{
-        _imageCache = [[JxImageCache alloc] init];
-        _imageCache.useCache = YES;
+    if (sharedInstance) return sharedInstance;
+    
+    dispatch_once(&pred, ^{
+        
+        sharedInstance = [[JxImageCache alloc] init];
+        sharedInstance.useCache = YES;
         
         
-        [_imageCache setCountLimit:50];
-        [_imageCache setTotalCostLimit:150000];
-        [_imageCache setEvictsObjectsWithDiscardedContent:YES];
+        [sharedInstance setCountLimit:50];
+        [sharedInstance setTotalCostLimit:150000];
+        [sharedInstance setEvictsObjectsWithDiscardedContent:YES];
         
         
     });
     
-    return _imageCache;
+    return sharedInstance;
 }
 - (UIImage *)cachedImageForRequest:(NSURL *)url {
+    DLog(@"url %@", url);
 	return [self objectForKey:[url absoluteString]];
 }
 - (void)cacheImage:(UIImage *)image forRequest:(NSURL *)url{
