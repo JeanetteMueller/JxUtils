@@ -14,7 +14,7 @@
     
     NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"MMMM yyyy"];
-    [formatter setLocale:[NSLocale currentLocale]];
+    [formatter setLocale:[NSLocale autoupdatingCurrentLocale]];
     
     
     NSString *formattedDateString = [formatter stringFromDate:self];

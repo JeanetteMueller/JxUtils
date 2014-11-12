@@ -21,7 +21,7 @@
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
     
     // Create bitmap content with current image size and grayscale colorspace
-    CGContextRef context = CGBitmapContextCreate(nil, self.size.width, self.size.height, 8, 0, colorSpace, kCGImageAlphaNone);
+    CGContextRef context = CGBitmapContextCreate(nil, self.size.width, self.size.height, 8, 0, colorSpace, kCGBitmapByteOrderDefault);
     
     // Draw image into current context, with specified rectangle
     // using previously defined context (with grayscale colorspace)
