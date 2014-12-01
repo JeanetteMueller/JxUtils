@@ -32,7 +32,7 @@
     return sharedInstance;
 }
 - (UIImage *)cachedImageForRequest:(NSURL *)url {
-    DLog(@"url %@", url);
+    //DLog(@"url %@", url);
 	return [self objectForKey:[url absoluteString]];
 }
 - (void)cacheImage:(UIImage *)image forRequest:(NSURL *)url{
