@@ -23,7 +23,7 @@
     }
     fullRotation.duration = duration;
     fullRotation.speed = 2.0f;              // Changed rotation speed
-    if (repeatCount == 0)
+    if (repeatCount == -1)
         fullRotation.repeatCount = MAXFLOAT;
     else
         fullRotation.repeatCount = repeatCount;
