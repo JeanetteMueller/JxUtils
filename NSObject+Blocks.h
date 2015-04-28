@@ -9,6 +9,7 @@
 
 @interface NSObject (Blocks)
 
+- (void)performBlock:(void (^)())block;
 - (void)performBlock:(void (^)())block afterDelay:(NSTimeInterval)delay;
 
 @end
