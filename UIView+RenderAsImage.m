@@ -17,7 +17,7 @@
     
     // On iOS 4 and later, use UIGraphicsBeginImageContextWithOptions to take the scale into consideration
     // On iOS prior to 4, fall back to use UIGraphicsBeginImageContext
-    if (NULL != UIGraphicsBeginImageContextWithOptions){
+    if (NULL != &UIGraphicsBeginImageContextWithOptions){
         UIGraphicsBeginImageContextWithOptions(imageSize, self.opaque, 0.0);
     }else{
         UIGraphicsBeginImageContext(imageSize);
