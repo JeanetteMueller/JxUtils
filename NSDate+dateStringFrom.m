@@ -21,7 +21,7 @@
     
     //NSLog(@"formattedDateString for locale %@: %@", [[formatter locale] localeIdentifier], formattedDateString);
     
-    NSLog(@"formattedDateString: %@", formattedDateString);
+    //NSLog(@"formattedDateString: %@", formattedDateString);
     
     return formattedDateString;
 }

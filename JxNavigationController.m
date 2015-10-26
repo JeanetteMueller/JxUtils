@@ -15,9 +15,14 @@
     return YES;
 }
 
-- (NSUInteger)supportedInterfaceOrientations{
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverriding-method-mismatch"
+#pragma clang diagnostic ignored "-Wmismatched-return-types"
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations{
     return _allowedInterfaceOrientations;
 }
+#pragma clang diagnostic pop
 
 
 @end
