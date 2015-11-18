@@ -26,7 +26,7 @@
         [sharedInstance setTotalCostLimit:150000];
         [sharedInstance setEvictsObjectsWithDiscardedContent:YES];
         
-        
+        [[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(cleanUpMemory:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     });
     
     return sharedInstance;
@@ -42,5 +42,10 @@
 }
 - (void)clearCache{
     [self removeAllObjects];
+}
+
+#pragma mark Notification
+- (void)cleanUpMemory:(NSNotification *)notification{
+    [self clearCache];
 }
 @end
