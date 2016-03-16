@@ -10,9 +10,22 @@
 
 @implementation NSDate (dateStringFrom)
 
++ (NSDateFormatter *)sharedDateFormatter{
+    static NSDateFormatter *sharedDateFormatter = nil;
+    static dispatch_once_t pred;
+    
+    if (sharedDateFormatter) return sharedDateFormatter;
+    
+    dispatch_once(&pred, ^{
+        sharedDateFormatter = [[NSDateFormatter alloc] init];
+    });
+    
+    return sharedDateFormatter;
+}
+
 - (NSString *)dateStringFromDate{
     
-    NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+    NSDateFormatter* formatter = [NSDate sharedDateFormatter];
     [formatter setDateFormat:@"MMMM yyyy"];
     [formatter setLocale:[NSLocale autoupdatingCurrentLocale]];
     

@@ -15,14 +15,31 @@
     return YES;
 }
 
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverriding-method-mismatch"
-#pragma clang diagnostic ignored "-Wmismatched-return-types"
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations{
     return _allowedInterfaceOrientations;
 }
-#pragma clang diagnostic pop
-
-
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+//    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+//        
+//
+//        
+//        self.navigationBar.frame = CGRectMake(self.navigationBar.frame.origin.x, self.navigationBar.frame.origin.y,
+//                                              414, self.navigationBar.frame.size.height);
+//        
+//    } completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+//        
+//        self.navigationBar.frame = CGRectMake(self.navigationBar.frame.origin.x, self.navigationBar.frame.origin.y,
+//                                              414, self.navigationBar.frame.size.height);
+//        
+//        
+//        DLog(@"self.navigationBar.frame.size.width %f", self.navigationBar.frame.size.width);
+//        
+//    }];
+    
+    
+    
+    
+}
 @end
