@@ -90,7 +90,7 @@
         //läuft schon
     }
 }
-- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale andBlur:(BOOL)blur{
+- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius {
     
     if (CGSizeEqualToSize(customSize,CGSizeZero)) {
         customSize = self.frame.size;
@@ -104,7 +104,7 @@
     //DLog(@"customSize.width %f scale %f = %f", customSize.width, multiplier, customSize.width*multiplier);
     
     
-    NSString *resizedPath = [UIImageView getPathForResizedPath:path withSize:customSize andScale:useScale andBlur:blur];
+    NSString *resizedPath = [UIImageView getPathForResizedPath:path withSize:customSize andScale:useScale andBlur:blurRadius];
     
     //DLog(@"resizedPath %@", resizedPath);
     
@@ -120,8 +120,8 @@
             
             image = [original imageWithSize:CGSizeMake(customSize.width*multiplier, customSize.height*multiplier)];
             
-            if (blur) {
-                image = [image applyBlurWithRadius:15 tintColor:[UIColor colorWithWhite:0.0f alpha:0.5f] saturationDeltaFactor:1.0f maskImage:nil];
+            if (blurRadius > 0) {
+                image = [image applyBlurWithRadius:blurRadius tintColor:[UIColor colorWithWhite:0.0f alpha:0.5f] saturationDeltaFactor:1.0f maskImage:nil];
 
             }
             
@@ -146,7 +146,7 @@
     return nil;
 }
 
-+ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale andBlur:(BOOL)blur{
++ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius {
     
     CGFloat multiplier = 1.0;
     if (useScale) {
@@ -157,8 +157,8 @@
     
     NSString *resizedPath = [path stringByDeletingPathExtension];
     resizedPath = [resizedPath stringByAppendingFormat:@"__resized__jpg__%dx%d", (int)(size.width*multiplier), (int)(size.height*multiplier)];
-    if (blur) {
-        resizedPath = [resizedPath stringByAppendingString:@"__blur"];
+    if (blurRadius) {
+        resizedPath = [resizedPath stringByAppendingFormat:@"__blur%f", blurRadius];
     }
     resizedPath = [resizedPath stringByAppendingPathExtension:extension];
     
