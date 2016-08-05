@@ -6,7 +6,7 @@
 //
 
 
-#if defined(CONFIGURATION_AppStore) || defined(CONFIGURATION_AdHoc)
+#if defined(CONFIGURATION_AppStore) || defined(CONFIGURATION_AdHoc) || defined(AppStore) || defined(Store) || defined(AdHoc)
 
 
 #define DLog(fmt, ...)

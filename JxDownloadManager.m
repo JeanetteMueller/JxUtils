@@ -216,13 +216,26 @@
         enableBackgroundMode:backgroundMode];
 }
 
+- (void)removeAllBlocks{
+    
+    for (JxDownloadObject *download in self.downloads.allValues) {
+        if (![download.directoryName isEqualToString:kDownloadDirectorysFeeds] &&
+            ![download.directoryName isEqualToString:kDownloadDirectorysDirectory] &&
+            ![download.directoryName isEqualToString:kDownloadDirectorysImages]) {
+            
+            [download.completionBlocks removeAllObjects];
+            [download.remainingTimeBlocks removeAllObjects];
+            [download.progressBlocks removeAllObjects];
+        }
+    }
+}
 - (void)cancelDownloadForUrl:(NSString *)fileIdentifier {
     JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
     if (download) {
         [download.downloadTask cancel];
         [self.downloads removeObjectForKey:fileIdentifier];
         if (download.completionBlocks.count > 0) {
-            for (JxDownloadCompletionBlock block in download.completionBlocks) {
+            for (JxDownloadCompletionBlock block in download.completionBlocks.copy) {
                 block(download, NO);
             }
         }
@@ -236,7 +249,7 @@
 - (void)cancelAllDownloads {
     [self.downloads enumerateKeysAndObjectsUsingBlock:^(id key, JxDownloadObject *download, BOOL *stop) {
         if (download.completionBlocks.count > 0) {
-            for (JxDownloadCompletionBlock block in download.completionBlocks) {
+            for (JxDownloadCompletionBlock block in download.completionBlocks.copy) {
                 block(download, NO);
             }
         }
@@ -246,11 +259,11 @@
     [self cleanTmpDirectory];
 }
 
-- (NSArray *)currentDownloads {
+- (NSArray <JxDownloadObject *> *)currentDownloads {
     NSMutableArray *currentDownloads = [NSMutableArray new];
     [self.downloads enumerateKeysAndObjectsUsingBlock:^(id key, JxDownloadObject *download, BOOL *stop) {
         if (download.downloadTask.originalRequest.URL.absoluteString) {
-            [currentDownloads addObject:download.downloadTask.originalRequest.URL.absoluteString];
+            [currentDownloads addObject:download];
         }
     }];
     return currentDownloads;
@@ -269,31 +282,31 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
     
     NSString *fileIdentifier = downloadTask.originalRequest.URL.absoluteString;
     JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
-    if (download.progressBlocks.count > 0) {
+    
+    CGFloat newprogress = (CGFloat)totalBytesWritten / (CGFloat)totalBytesExpectedToWrite;
+    
+    if (download.progress < newprogress - 0.005f) {
+        download.progress = newprogress;
         
-        CGFloat progress = (CGFloat)totalBytesWritten / (CGFloat)totalBytesExpectedToWrite;
-        
-        __weak __typeof(download)weakDownload = download;
-        
-        dispatch_async(dispatch_get_main_queue(), ^(void) {
+        if (download.progressBlocks.count > 0) {
             
-            __strong __typeof(weakDownload)strongDownload = weakDownload;
-            
-            for (JxDownloadProgressBlock block in download.progressBlocks) {
-                block(strongDownload, progress);
+            for (JxDownloadProgressBlock block in download.progressBlocks.copy) {
+                block(download, download.progress);
             }
             
-        });
+            
+        }
+        
+        CGFloat remainingTime = [self remainingTimeForDownload:download bytesTransferred:totalBytesWritten totalBytesExpectedToWrite:totalBytesExpectedToWrite];
+        if (download.remainingTimeBlocks.count > 0) {
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                for (JxDownloadRemainingTimeBlock block in download.remainingTimeBlocks.copy) {
+                    block(download, (NSUInteger)remainingTime);
+                }
+            });
+        }
     }
     
-    CGFloat remainingTime = [self remainingTimeForDownload:download bytesTransferred:totalBytesWritten totalBytesExpectedToWrite:totalBytesExpectedToWrite];
-    if (download.remainingTimeBlocks.count > 0) {
-        dispatch_async(dispatch_get_main_queue(), ^(void) {
-            for (JxDownloadRemainingTimeBlock block in download.remainingTimeBlocks) {
-                block(download, (NSUInteger)remainingTime);
-            }
-        });
-    }
 }
 
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
@@ -343,16 +356,13 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
         [self.downloads removeObjectForKey:fileIdentifier];
         
         if (download.completionBlocks.count > 0) {
-            dispatch_async(dispatch_get_main_queue(), ^(void) {
-                
-                for (JxDownloadCompletionBlock block in download.completionBlocks) {
-                    if ([(NSHTTPURLResponse *)downloadTask.response statusCode] >= 400 && [(NSHTTPURLResponse *)downloadTask.response statusCode] < 500) {
-                        block(download, NO);
-                    }else{
-                        block(download, YES);
-                    }
+            for (JxDownloadCompletionBlock block in download.completionBlocks.copy) {
+                if ([(NSHTTPURLResponse *)downloadTask.response statusCode] >= 400 && [(NSHTTPURLResponse *)downloadTask.response statusCode] < 500) {
+                    block(download, NO);
+                }else{
+                    block(download, YES);
                 }
-            });
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ typedef void(^JxDownloadCompletionBlock)(JxDownloadObject *download, BOOL comple
 @property (copy, nonatomic) NSString *fileName;
 @property (copy, nonatomic) NSString *directoryName;
 @property (copy, nonatomic) NSDate *startDate;
+@property (assign, nonatomic) CGFloat progress;
 
 - (instancetype)initWithDownloadTask:(NSURLSessionDownloadTask *)downloadTask
                        progressBlock:(JxDownloadProgressBlock)progressBlock

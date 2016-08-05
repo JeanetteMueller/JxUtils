@@ -57,6 +57,8 @@
                                  completionBlock:(void(^)(JxDownloadObject *download, BOOL completed))completionBlock
                             enableBackgroundMode:(BOOL)backgroundMode;
 
+- (void)removeAllBlocks;
+
 - (void)cancelAllDownloads;
 - (void)cancelDownloadForUrl:(NSString *)fileIdentifier;
 

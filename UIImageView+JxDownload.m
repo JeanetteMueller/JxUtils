@@ -90,7 +90,7 @@
         //läuft schon
     }
 }
-- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius {
+- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale{
     
     if (CGSizeEqualToSize(customSize,CGSizeZero)) {
         customSize = self.frame.size;
@@ -104,7 +104,7 @@
     //DLog(@"customSize.width %f scale %f = %f", customSize.width, multiplier, customSize.width*multiplier);
     
     
-    NSString *resizedPath = [UIImageView getPathForResizedPath:path withSize:customSize andScale:useScale andBlur:blurRadius];
+    NSString *resizedPath = [UIImageView getPathForResizedPath:path withSize:customSize andScale:useScale];
     
     //DLog(@"resizedPath %@", resizedPath);
     
@@ -119,11 +119,6 @@
             UIImage *original = [UIImage imageWithContentsOfFile:path];
             
             image = [original imageWithSize:CGSizeMake(customSize.width*multiplier, customSize.height*multiplier)];
-            
-            if (blurRadius > 0) {
-                image = [image applyBlurWithRadius:blurRadius tintColor:[UIColor colorWithWhite:0.0f alpha:0.5f] saturationDeltaFactor:1.0f maskImage:nil];
-
-            }
             
             [UIImageJPEGRepresentation(image, 0.6) writeToFile:resizedPath atomically:YES];
             
@@ -146,7 +141,7 @@
     return nil;
 }
 
-+ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius {
++ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale {
     
     CGFloat multiplier = 1.0;
     if (useScale) {
@@ -157,9 +152,6 @@
     
     NSString *resizedPath = [path stringByDeletingPathExtension];
     resizedPath = [resizedPath stringByAppendingFormat:@"__resized__jpg__%dx%d", (int)(size.width*multiplier), (int)(size.height*multiplier)];
-    if (blurRadius) {
-        resizedPath = [resizedPath stringByAppendingFormat:@"__blur%f", blurRadius];
-    }
     resizedPath = [resizedPath stringByAppendingPathExtension:extension];
     
     resizedPath = [resizedPath stringByAppendingPathExtension:@"jpg"];
@@ -190,7 +182,7 @@
                 
                 NSString *path = [[JxDownloadManager sharedManager] localPathForFile:download.fileName inDirectory:download.directoryName];
                 
-                UIImage *resizedImage = [strongSelf resizeImageToViewSizeWithSourcePath:path andCustomSize:CGSizeZero andScale:NO andBlur:NO];
+                UIImage *resizedImage = [strongSelf resizeImageToViewSizeWithSourcePath:path andCustomSize:CGSizeZero andScale:NO];
                 
                 [strongSelf setImage:resizedImage];
             }

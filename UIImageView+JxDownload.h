@@ -20,8 +20,8 @@
 
 - (void)cancelDownloadFromURL:(NSString *)url;
 
-- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius;
+- (UIImage *)resizeImageToViewSizeWithSourcePath:(NSString *)path andCustomSize:(CGSize)customSize andScale:(BOOL)useScale;
 
-+ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale andBlur:(CGFloat)blurRadius;
++ (NSString *)getPathForResizedPath:(NSString *)path withSize:(CGSize)size andScale:(BOOL)useScale;
 
 @end
