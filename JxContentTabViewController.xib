@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="NO">
+    <dependencies>
+        <development version="7000" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11201"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="JxContentTabViewController">
+            <connections>
+                <outlet property="activeMarker" destination="JaI-vk-Bxn" id="X2C-dZ-oPc"/>
+                <outlet property="buttonContainer" destination="h9M-D2-tqZ" id="crb-CZ-ntg"/>
+                <outlet property="pageContainer" destination="JZ1-rV-DgA" id="ZQ9-nu-AzS"/>
+                <outlet property="view" destination="UBq-tv-JWt" id="gdN-4E-Q8v"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="UBq-tv-JWt">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="h9M-D2-tqZ">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JaI-vk-Bxn">
+                            <rect key="frame" x="0.0" y="52" width="160" height="8"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <color key="backgroundColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        </view>
+                    </subviews>
+                    <color key="backgroundColor" red="0.33333333333333331" green="0.33333333333333331" blue="0.33333333333333331" alpha="1" colorSpace="calibratedRGB"/>
+                </view>
+                <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JZ1-rV-DgA">
+                    <rect key="frame" x="0.0" y="60" width="375" height="607"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="JZ1-rV-DgA" firstAttribute="top" secondItem="UBq-tv-JWt" secondAttribute="top" constant="60" id="BLZ-Ae-V7y"/>
+                <constraint firstItem="h9M-D2-tqZ" firstAttribute="top" secondItem="UBq-tv-JWt" secondAttribute="top" id="Fsh-fJ-ksX"/>
+                <constraint firstAttribute="bottom" secondItem="JZ1-rV-DgA" secondAttribute="bottom" id="VK2-l4-xGT"/>
+                <constraint firstItem="h9M-D2-tqZ" firstAttribute="trailing" secondItem="JZ1-rV-DgA" secondAttribute="trailing" id="XE6-Ya-3sG"/>
+                <constraint firstItem="h9M-D2-tqZ" firstAttribute="leading" secondItem="JZ1-rV-DgA" secondAttribute="leading" id="jUC-kp-00K"/>
+                <constraint firstItem="JZ1-rV-DgA" firstAttribute="top" secondItem="h9M-D2-tqZ" secondAttribute="bottom" id="m8K-kc-g5g"/>
+                <constraint firstAttribute="trailing" secondItem="h9M-D2-tqZ" secondAttribute="trailing" id="ncM-Ph-aRd"/>
+                <constraint firstItem="h9M-D2-tqZ" firstAttribute="leading" secondItem="UBq-tv-JWt" secondAttribute="leading" id="tgd-Xs-XfQ"/>
+            </constraints>
+            <point key="canvasLocation" x="709" y="452"/>
+        </view>
+    </objects>
+</document>

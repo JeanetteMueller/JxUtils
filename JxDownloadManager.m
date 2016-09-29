@@ -127,8 +127,13 @@
         }
         
         downloadTask.taskDescription = [NSString stringWithFormat:@"%@||#||%@", fileName, directory];
-        JxDownloadObject *downloadObject = [[JxDownloadObject alloc] initWithDownloadTask:downloadTask progressBlock:progressBlock remainingTime:remainingTimeBlock completionBlock:completionBlock];
-        downloadObject.startDate = [NSDate date];
+        
+        JxDownloadObject *downloadObject = [[JxDownloadObject alloc] initWithDownloadTask:downloadTask
+                                                                            progressBlock:progressBlock
+                                                                            remainingTime:remainingTimeBlock
+                                                                          completionBlock:completionBlock];
+        
+        downloadObject.startDate = [NSDate new];
         downloadObject.fileName = fileName;
         downloadObject.directoryName = directory;
         if (urlString && downloadObject) {
@@ -217,7 +222,7 @@
 }
 
 - (void)removeAllBlocks{
-    
+    LLog();
     for (JxDownloadObject *download in self.downloads.allValues) {
         if (![download.directoryName isEqualToString:kDownloadDirectorysFeeds] &&
             ![download.directoryName isEqualToString:kDownloadDirectorysDirectory] &&
@@ -230,6 +235,7 @@
     }
 }
 - (void)cancelDownloadForUrl:(NSString *)fileIdentifier {
+    LLog();
     JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
     if (download) {
         [download.downloadTask cancel];
@@ -247,14 +253,16 @@
 }
 
 - (void)cancelAllDownloads {
+    LLog();
     [self.downloads enumerateKeysAndObjectsUsingBlock:^(id key, JxDownloadObject *download, BOOL *stop) {
+        [download.downloadTask cancel];
+        [self.downloads removeObjectForKey:key];
+        
         if (download.completionBlocks.count > 0) {
             for (JxDownloadCompletionBlock block in download.completionBlocks.copy) {
                 block(download, NO);
             }
         }
-        [download.downloadTask cancel];
-        [self.downloads removeObjectForKey:key];
     }];
     [self cleanTmpDirectory];
 }
@@ -262,14 +270,23 @@
 - (NSArray <JxDownloadObject *> *)currentDownloads {
     NSMutableArray *currentDownloads = [NSMutableArray new];
     [self.downloads enumerateKeysAndObjectsUsingBlock:^(id key, JxDownloadObject *download, BOOL *stop) {
+        
         if (download.downloadTask.originalRequest.URL.absoluteString) {
-            [currentDownloads addObject:download];
+            
+            if (download.downloadTask.state != NSURLSessionTaskStateCompleted) {
+                
+                [currentDownloads addObject:download];
+            }
+            
         }
     }];
     return currentDownloads;
 }
 
 #pragma mark - NSURLSession Delegate
+- (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error{
+    DLog(@"error %@ -> %@", error, error.localizedDescription);
+}
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task willPerformHTTPRedirection:(NSHTTPURLResponse *)response newRequest:(NSURLRequest *)request completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler{
     LLog();
@@ -279,6 +296,8 @@
       didWriteData:(int64_t)bytesWritten
  totalBytesWritten:(int64_t)totalBytesWritten
 totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    
+    LLog();
     
     NSString *fileIdentifier = downloadTask.originalRequest.URL.absoluteString;
     JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
@@ -310,7 +329,7 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
 }
 
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
-    
+    LLog();
     NSError *error;
     NSURL *destinationLocation;
     
@@ -389,7 +408,7 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
 - (BOOL)fileDownloadCompletedForUrl:(NSString *)fileIdentifier {
     BOOL retValue = YES;
     JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
-    if (download) {
+    if (download && download.downloadTask.state != NSURLSessionTaskStateCompleted) {
         // downloads are removed once they finish
         retValue = NO;
     }
@@ -400,7 +419,7 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
     BOOL retValue = NO;
     if (self.downloads.allKeys.count > 0) {
         JxDownloadObject *download = [self.downloads objectForKey:fileIdentifier];
-        if (download) {
+        if (download && download.downloadTask.state != NSURLSessionTaskStateCompleted) {
             retValue = YES;
         }
     }

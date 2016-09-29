@@ -104,9 +104,10 @@
     //DLog(@"customSize.width %f scale %f = %f", customSize.width, multiplier, customSize.width*multiplier);
     
     
+    
     NSString *resizedPath = [UIImageView getPathForResizedPath:path withSize:customSize andScale:useScale];
     
-    //DLog(@"resizedPath %@", resizedPath);
+    DLog(@"resizedPath %@", resizedPath);
     
     UIImage *image = [[JxImageCache sharedImageCache] cachedImageForRequest:[NSURL fileURLWithPath:resizedPath]];
     
