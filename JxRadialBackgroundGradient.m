@@ -53,3 +53,23 @@
 }
 
 @end
+
+
+@implementation UIView (RadialBackgroundGradient)
+
+- (void)prepareBackgroundWithColor:(UIColor *)color1 andColor:(UIColor *)color2{
+    
+    JxRadialBackgroundGradient *gradient = [JxRadialBackgroundGradient new];
+    gradient.innerRadialColor = color2;
+    gradient.outerRadialColor = color1;
+    gradient.frame = self.bounds;
+    
+    if ([[self.layer sublayers].firstObject isKindOfClass:[JxRadialBackgroundGradient class]]) {
+        [self.layer replaceSublayer:[self.layer sublayers].firstObject with:gradient];
+    }else{
+        [self.layer insertSublayer:gradient atIndex:0];
+    }
+    
+}
+
+@end

@@ -15,3 +15,10 @@
 
 @property (assign, nonatomic) CGPoint radialCenter;
 @end
+
+
+@interface UIView (RadialBackgroundGradient)
+
+- (void)prepareBackgroundWithColor:(UIColor *)color1 andColor:(UIColor *)color2;
+
+@end
