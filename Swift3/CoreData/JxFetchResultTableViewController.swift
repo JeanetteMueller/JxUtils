@@ -22,6 +22,8 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     var sortDescriptors: [NSSortDescriptor]?
     var fetchLimit:Int = 0
     
+    var firstTimeOpened = true
+    
     override var canBecomeFirstResponder: Bool {
         return true
     }
@@ -48,6 +50,9 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Uncomment the following line to preserve selection between presentations
+        self.clearsSelectionOnViewWillAppear = true
+        
         if self.refetchData(){
             self.tableView?.reloadData()
         }
@@ -56,17 +61,27 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        _fetchedResultsController.delegate = self
+        
+        if firstTimeOpened == false{
+            self.resetFetchResultController()
+            if self.refetchData() {
+                self.tableView.reloadData()
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        firstTimeOpened = false
         self.tableView?.scrollsToTop = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         
         self.tableView?.scrollsToTop = false
+        
+        _fetchedResultsController.delegate = nil
         
         super.viewWillDisappear(animated)
     }
@@ -78,6 +93,16 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
         if let sections = self.fetchedResultsController.sections{
             let count = sections.count
             
+            /*
+            if count == 1 {
+                
+                let sectionInfo = sections[0]
+                
+                if sectionInfo.numberOfObjects == 0{
+                    return 0
+                }
+            }
+ */
             return count
         }
         return 0
@@ -121,9 +146,10 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
         
         print("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
         
-        let object = self.object(at: indexPath)
+        if let object = self.object(at: indexPath) {
         
-        cell.textLabel?.text = object.objectID.description
+            cell.textLabel?.text = object.objectID.description
+        }
     }
     
     func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
@@ -140,7 +166,7 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     
     // MARK: Fetch Result Controller
     
-    private var fetchedResultsController: NSFetchedResultsController<NSManagedObject> {
+    var fetchedResultsController: NSFetchedResultsController<NSManagedObject> {
         if let fetchedResultsController = self._fetchedResultsController{
             
             return fetchedResultsController
@@ -190,8 +216,23 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
         return false
     }
     
-    func object(at indexPath: IndexPath) -> NSManagedObject{
-        return self.fetchedResultsController.object(at: indexPath)
+    func object(at indexPath: IndexPath) -> NSManagedObject?{
+        let sections = self.fetchedResultsController.sections
+        
+        if (sections?.count)! > indexPath.section {
+            
+            if let sectionInfo = sections?[indexPath.section] {
+                
+                if sectionInfo.numberOfObjects > indexPath.row {
+                    return self.fetchedResultsController.object(at: indexPath)
+                }
+            }
+        }
+        return nil
+    }
+    
+    func allObjects() -> [NSManagedObject]? {
+        return self.fetchedResultsController.fetchedObjects
     }
     
     // MARK: Fetch Result Controller Delegate
@@ -236,13 +277,13 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
                     self.tableView?.insertRows(at: [newIndexPath], with: .middle)
                     
                     
-                    let headerView = self.tableView?.headerView(forSection: newIndexPath.section)
-                    //if headerView != nil && [headerView respondsToSelector:@selector(update)]) {
-                    //    [headerView performSelector:@selector(update)];
-                    //}
-                    
-                    headerView?.setNeedsDisplay()
-                    headerView?.setNeedsLayout()
+//                    let headerView = self.tableView?.headerView(forSection: newIndexPath.section)
+//                    //if headerView != nil && [headerView respondsToSelector:@selector(update)]) {
+//                    //    [headerView performSelector:@selector(update)];
+//                    //}
+//                    
+//                    headerView?.setNeedsDisplay()
+//                    headerView?.setNeedsLayout()
                 }
                 break;
                 
@@ -254,14 +295,14 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
                     
                     self.tableView?.deleteRows(at: [indexPath], with: .middle)
                     
-                    let headerView = self.tableView?.headerView(forSection: (newIndexPath?.section)!)
-                    
-                    //if ([headerView respondsToSelector:@selector(update)]) {
-                    //    [headerView performSelector:@selector(update)];
-                    //}
-                    
-                    headerView?.setNeedsDisplay()
-                    headerView?.setNeedsLayout()
+//                    let headerView = self.tableView?.headerView(forSection: (newIndexPath?.section)!)
+//                    
+//                    //if ([headerView respondsToSelector:@selector(update)]) {
+//                    //    [headerView performSelector:@selector(update)];
+//                    //}
+//                    
+//                    headerView?.setNeedsDisplay()
+//                    headerView?.setNeedsLayout()
                 }
                 break;
                 
@@ -275,24 +316,26 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
                         
                         self.startCell(cell, atIndexPath:indexPath)
                         
-                        let headerView = self.tableView?.headerView(forSection: indexPath.section)
-                        
-                        //if headerView.respondsTo respondsToSelector:@selector(update)]) {
-                        //    [headerView performSelector:@selector(update)];
-                        //}
-                        
-                        headerView?.setNeedsDisplay()
-                        headerView?.setNeedsLayout()
+//                        let headerView = self.tableView?.headerView(forSection: indexPath.section)
+//                        
+//                        //if headerView.respondsTo respondsToSelector:@selector(update)]) {
+//                        //    [headerView performSelector:@selector(update)];
+//                        //}
+//                        
+//                        headerView?.setNeedsDisplay()
+//                        headerView?.setNeedsLayout()
                     }
                 }
                 break;
                 
             case .move:
-                if let indexPath = indexPath {
-                    if let newIndexPath = newIndexPath {
-                        self.tableView?.deleteRows(at: [indexPath], with: UITableViewRowAnimation.none)
-                        self.tableView?.insertRows(at: [newIndexPath], with: UITableViewRowAnimation.none)
-                    }
+                if let deleteIndexPath = indexPath {
+                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .fade)
+                }
+                
+                if let insertIndexPath = newIndexPath {
+                    
+                    self.tableView?.insertRows(at: [insertIndexPath], with: .fade)
                 }
                 break;
             }
@@ -307,4 +350,6 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
             self.tableView?.reloadData()
         }
     }
+    
+
 }
