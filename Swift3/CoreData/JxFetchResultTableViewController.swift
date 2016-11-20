@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsControllerDelegate{
+class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsControllerDelegate{
     
     var cellIdentifier: String = "Cell"
     
@@ -19,6 +19,8 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     var entityName:String?
     var sectionKeyPath:String?
     var predicates = [NSPredicate]()
+    
+    var searchPredicates:NSPredicate?
     var sortDescriptors: [NSSortDescriptor]?
     var fetchLimit:Int = 0
     
@@ -177,6 +179,13 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
         if self.predicates.count > 0 {
             fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
         }
+        if let search = self.searchPredicates{
+            
+            var filteredPredicates = self.predicates
+            filteredPredicates.append(search)
+            
+            fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
+        }
         if let sortDescriptors = self.sortDescriptors {
             fetchRequest.sortDescriptors = sortDescriptors;
         }
@@ -230,16 +239,22 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
         }
         return nil
     }
-    
-    func allObjects() -> [NSManagedObject]? {
-        return self.fetchedResultsController.fetchedObjects
+    func indexPath(forObject object:NSManagedObject) -> IndexPath?{
+        
+        return self.fetchedResultsController.indexPath(forObject: object)
+    }
+    func allObjects() -> [NSManagedObject] {
+        if let all = self.fetchedResultsController.fetchedObjects{
+            return all
+        }
+        return [NSManagedObject]()
     }
     
     // MARK: Fetch Result Controller Delegate
     
     internal func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if (self.navigationController?.viewControllers.last?.isEqual(self))!{
-            
+        
+        if self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ){
             self.tableView?.beginUpdates()
         }
     }
@@ -250,8 +265,7 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        
-        if (self.navigationController?.viewControllers.last?.isEqual(self))!{
+         if self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ){
             
             switch(type) {
             case .insert:
@@ -269,7 +283,7 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        if (self.navigationController?.viewControllers.last?.isEqual(self))!{
+        if self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ){
             
             switch(type) {
             case .insert:
@@ -343,9 +357,10 @@ class JxFetchResultTableViewController: UITableViewController, NSFetchedResultsC
     }
     
     internal func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if (self.navigationController?.viewControllers.last?.isEqual(self))!{
+        if self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ){
+                
+                self.tableView?.endUpdates()
             
-            self.tableView?.endUpdates()
         }else{
             self.tableView?.reloadData()
         }

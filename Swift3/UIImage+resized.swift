@@ -10,8 +10,29 @@ import UIKit
 
 extension UIImage {
     
-    class func getImage(withImageString imageString:String, andSize size:CGSize?) -> UIImage?{
+    class func getFolderPath() -> String {
+        let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.cachesDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
+        var documentsDirectory = paths[0] as String
         
+        if let containerPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: kGroupIdentifier){
+            documentsDirectory = containerPath.path
+        }
+        
+        return documentsDirectory.appending("/images")
+    }
+    class func getFilePath(withUrl url:URL) -> String {
+        
+        let imageDir = UIImage.getFolderPath()
+        
+        return imageDir.appending("/").appending(url.md5())
+    }
+    class func getFilePath(withUrlString urlString:String) -> String {
+        
+        let imageDir = UIImage.getFolderPath()
+        
+        return imageDir.appending("/").appending(urlString.md5())
+    }
+    class func getImage(withImageString imageString:String, andSize size:CGSize?) -> UIImage?{
         var useSize:CGSize
         if !(size != nil) {
             useSize = CGSize(width: 1000, height: 1000)
@@ -19,7 +40,21 @@ extension UIImage {
             useSize = size!
         }
         
-        if let imagePath = UIImage.pathToResizedImage(fromPath: imageString, toSize: useSize){
+        let imagePath = UIImage.getFilePath(withUrlString: imageString)
+        
+        if let imagePath = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
+            return UIImage.init(contentsOfFile: imagePath)
+        }
+        return nil
+    }
+    class func getImage(withImagePath imagePath:String, andSize size:CGSize?) -> UIImage?{
+        var useSize:CGSize
+        if !(size != nil) {
+            useSize = CGSize(width: 1000, height: 1000)
+        }else{
+            useSize = size!
+        }
+        if let imagePath = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
             return UIImage.init(contentsOfFile: imagePath)
         }
         return nil
