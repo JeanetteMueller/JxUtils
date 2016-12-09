@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsControllerDelegate{
+class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetchedResultsControllerDelegate{
     
     var cellIdentifier: String = "Cell"
     
@@ -18,16 +18,13 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     var entityName:String?
     var sectionKeyPath:String?
-    
     var predicates = [NSPredicate]()
+    
     var searchPredicate: NSPredicate?
-    
     var sortDescriptors = [NSSortDescriptor]()
-    
     var fetchLimit:Int = 0
     
     var firstTimeOpened = true
-    
     var dynamicUpdate = true
     
     override var canBecomeFirstResponder: Bool {
@@ -60,7 +57,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         self.clearsSelectionOnViewWillAppear = true
         
         if self.refetchData(){
-            self.tableView?.reloadData()
+            self.collectionView?.reloadData()
         }
     }
     
@@ -71,7 +68,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         
         if firstTimeOpened == false{
             if self.refetchData() {
-                self.tableView.reloadData()
+                self.collectionView?.reloadData()
             }
         }
     }
@@ -79,92 +76,80 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         firstTimeOpened = false
-        self.tableView?.scrollsToTop = true
+        self.collectionView?.scrollsToTop = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         
-        self.tableView?.scrollsToTop = false
+        self.collectionView?.scrollsToTop = false
         
+        _fetchedResultsController.delegate = nil
         
         super.viewWillDisappear(animated)
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        self.tableView?.scrollsToTop = false
-        
-        _fetchedResultsController.delegate = nil
-        
-        super.viewDidDisappear(animated)
-    }
+    // MARK: UICollectionView DataSource
     
-    // MARK: UITableView DataSource
-    
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    override func numberOfSections(in collectionView: UICollectionView) -> Int {
+        var count = 1
         
         if let sections = self.fetchedResultsController.sections{
-            let count = sections.count
-            
-            return count
+            count = sections.count
         }
-        return 0
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sections = self.fetchedResultsController.sections
-        var count = 0;
         
-        if (sections?.count)! > section {
-            
-            let sectionInfo = sections?[section]
-            
-            count = (sectionInfo?.numberOfObjects)!
-        }
+        print("numberOfSections", count)
         return count
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        var count = 0
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
+        if let sections = self.fetchedResultsController.sections{
+            
+            if sections.count > section {
+                
+                let sectionInfo = sections[section]
+                
+                count = sectionInfo.numberOfObjects
+            }
+        }
+        print("numberOfItemsInSection", count)
+        return count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: self.cellIdentifier, for: indexPath)
         
         self.configureCell(cell, atIndexPath: indexPath)
         
         return cell
     }
-    
-    // MARK: UITableView Delegate
-    
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         self.startCell(cell, atIndexPath: indexPath)
     }
-    
-    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    override func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         self.unloadCell(cell, atIndexPath: indexPath)
     }
     
     // MARK: Use Cells
     
-    func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
+    func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
         print("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
-        
-        if let object = self.object(at: indexPath) {
-        
-            cell.textLabel?.text = object.objectID.description
-        }
     }
     
-    func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
+    func startCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
         print("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
     
-    func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
+    func unloadCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
         print("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
         
         NotificationCenter.default.removeObserver(cell)
     }
+    
     
     // MARK: Fetch Result Controller
     
@@ -250,10 +235,13 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     // MARK: Fetch Result Controller Delegate
     
+    var blockOperations: [BlockOperation] = []
+    
     internal func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         
-        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
-            self.tableView?.beginUpdates()
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
+            
+            blockOperations.removeAll(keepingCapacity: false)
         }
     }
     
@@ -263,108 +251,115 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
             
-            switch(type) {
-            case .insert:
-                self.tableView?.insertSections(IndexSet.init(integer: sectionIndex), with: .middle)
-                break;
+            if type == NSFetchedResultsChangeType.insert {
+                print("Insert Section: \(sectionIndex)")
                 
-            case .delete:
-                self.tableView?.deleteSections(IndexSet.init(integer: sectionIndex), with: .middle)
-                break;
-            default:
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.insertSections(IndexSet.init(integer: sectionIndex))
+                        }
+                    })
+                )
+            }
+            else if type == NSFetchedResultsChangeType.update {
+                print("Update Section: \(sectionIndex)")
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.reloadSections(IndexSet.init(integer: sectionIndex))
+                        }
+                    })
+                )
+            }
+            else if type == NSFetchedResultsChangeType.delete {
+                print("Delete Section: \(sectionIndex)")
                 
-                break;
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.deleteSections(IndexSet.init(integer: sectionIndex))
+                        }
+                    })
+                )
             }
         }
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))!))  && self.dynamicUpdate == true{
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
             
-            switch(type) {
-            case .insert:
-                if let newIndexPath = newIndexPath {
-                    self.tableView?.insertRows(at: [newIndexPath], with: .middle)
-                    
-                    
-//                    let headerView = self.tableView?.headerView(forSection: newIndexPath.section)
-//                    //if headerView != nil && [headerView respondsToSelector:@selector(update)]) {
-//                    //    [headerView performSelector:@selector(update)];
-//                    //}
-//                    
-//                    headerView?.setNeedsDisplay()
-//                    headerView?.setNeedsLayout()
-                }
-                break;
+            if type == NSFetchedResultsChangeType.insert {
+                print("Insert Object: \(newIndexPath)")
                 
-            case .delete:
-                if let indexPath = indexPath {
-                    let cell = self.tableView?.cellForRow(at: indexPath)
-                    
-                    NotificationCenter.default.removeObserver(cell as Any)
-                    
-                    self.tableView?.deleteRows(at: [indexPath], with: .middle)
-                    
-//                    let headerView = self.tableView?.headerView(forSection: (newIndexPath?.section)!)
-//                    
-//                    //if ([headerView respondsToSelector:@selector(update)]) {
-//                    //    [headerView performSelector:@selector(update)];
-//                    //}
-//                    
-//                    headerView?.setNeedsDisplay()
-//                    headerView?.setNeedsLayout()
-                }
-                break;
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.insertItems(at: [newIndexPath!])
+                        }
+                    })
+                )
+            }
+            else if type == NSFetchedResultsChangeType.update {
+                print("Update Object: \(indexPath)")
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.reloadItems(at: [indexPath!])
+                        }
+                    })
+                )
+            }
+            else if type == NSFetchedResultsChangeType.move {
+                print("Move Object: \(indexPath)")
                 
-            case .update:
-                if let indexPath = indexPath {
-                    if let cell = self.tableView?.cellForRow(at: (indexPath)) {
-                        
-                        NotificationCenter.default.removeObserver(cell)
-                        
-                        self.configureCell(cell, atIndexPath: indexPath)
-                        
-                        self.startCell(cell, atIndexPath:indexPath)
-                        
-//                        let headerView = self.tableView?.headerView(forSection: indexPath.section)
-//                        
-//                        //if headerView.respondsTo respondsToSelector:@selector(update)]) {
-//                        //    [headerView performSelector:@selector(update)];
-//                        //}
-//                        
-//                        headerView?.setNeedsDisplay()
-//                        headerView?.setNeedsLayout()
-                    }
-                }
-                break;
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
+                        }
+                    })
+                )
+            }
+            else if type == NSFetchedResultsChangeType.delete {
+                print("Delete Object: \(indexPath)")
                 
-            case .move:
-                if let deleteIndexPath = indexPath {
-                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .fade)
-                }
-                
-                if let insertIndexPath = newIndexPath {
-                    
-                    self.tableView?.insertRows(at: [insertIndexPath], with: .fade)
-                }
-                break;
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.deleteItems(at: [indexPath!])
+                        }
+                    })
+                )
             }
         }
     }
     
     internal func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))!)) && self.dynamicUpdate == true{
-                
-                self.tableView?.endUpdates()
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )  ) && self.dynamicUpdate == true{
+            
+            collectionView!.performBatchUpdates({ () -> Void in
+                for operation: BlockOperation in self.blockOperations {
+                    operation.start()
+                }
+            }, completion: { (finished) -> Void in
+                self.blockOperations.removeAll(keepingCapacity: false)
+            })
             
         }else{
-            self.tableView?.reloadData()
-            
+            self.collectionView?.reloadData()
             self.dynamicUpdate = true
         }
     }
     
-
+    deinit {
+        // Cancel all block operations when VC deallocates
+        for operation: BlockOperation in blockOperations {
+            operation.cancel()
+        }
+        
+        blockOperations.removeAll(keepingCapacity: false)
+    }
 }

@@ -25,6 +25,7 @@ class JxCircularProgress: UIView {
     
     public var dotSize:CGFloat = 3
     @IBInspectable public var circleColor:UIColor = UIColor.red
+    @IBInspectable public var shadowColor:UIColor = UIColor.clear
     private var percent : Float = Float(0)
     @IBInspectable public var lineWidth:CGFloat = CGFloat(10)
     public var textLabel:UILabel
@@ -48,19 +49,22 @@ class JxCircularProgress: UIView {
             self.draw(self.bounds)
         }
         
-        
         circle?.path = UIBezierPath.init(arcCenter: center,
-                                              radius: radius,
-                                              startAngle: radiantFrom(startDegree),
-                                              endAngle: radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
-                                              clockwise: true).cgPath
+                                         radius: radius,
+                                         startAngle: radiantFrom(startDegree),
+                                         endAngle: radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
+                                         clockwise: true).cgPath
         
         
         
         
         circle?.strokeColor = circleColor.cgColor
         circle?.lineWidth = lineWidth;
-        
+        circle?.shadowOffset = CGSize.init(width: 0, height: 1)
+        circle?.shadowColor = shadowColor.cgColor
+        circle?.shadowRadius = 4
+        circle?.shadowOpacity = 0.5
+
         
         if duration > 0.0 {
             let circleAnimation = CABasicAnimation.init(keyPath: "strokeEnd")
@@ -190,6 +194,7 @@ class JxCircularProgress: UIView {
     override func draw(_ rect: CGRect){
         if circle == nil {
             let circle = CAShapeLayer()
+            circle.lineCap = "round"
             circle.fillColor = nil;
             
             self.circle = circle

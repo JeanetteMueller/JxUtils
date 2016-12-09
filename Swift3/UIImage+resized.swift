@@ -8,6 +8,16 @@
 
 import UIKit
 
+class UIImageCache:NSCache<NSString, UIImage> {
+    static let sharedInstance: UIImageCache = {
+        
+        let instance = UIImageCache()
+        
+        // setup code
+        
+        return instance
+    }()
+}
 extension UIImage {
     
     class func getFolderPath() -> String {
@@ -33,40 +43,55 @@ extension UIImage {
         return imageDir.appending("/").appending(urlString.md5())
     }
     class func getImage(withImageString imageString:String, andSize size:CGSize?) -> UIImage?{
-        var useSize:CGSize
-        if !(size != nil) {
-            useSize = CGSize(width: 1000, height: 1000)
-        }else{
-            useSize = size!
-        }
         
         let imagePath = UIImage.getFilePath(withUrlString: imageString)
         
-        if let imagePath = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
-            return UIImage.init(contentsOfFile: imagePath)
-        }
-        return nil
+        return UIImage.getImage(withImagePath: imagePath, andSize: size)
     }
     class func getImage(withImagePath imagePath:String, andSize size:CGSize?) -> UIImage?{
         var useSize:CGSize
-        if !(size != nil) {
-            useSize = CGSize(width: 1000, height: 1000)
+        
+        if var mySize = size {
+            
+            while  mySize.width < 50 || mySize.height < 50 {
+                mySize = CGSize(width: mySize.width*2, height: mySize.height*2)
+            }
+            
+            let factor = mySize.width / mySize.height
+            
+            let newHeight = Math.ceilToTens(x: mySize.height)
+            
+            useSize = CGSize(width: newHeight * factor, height: newHeight)
+            
         }else{
-            useSize = size!
+            useSize = CGSize(width: 1000, height: 1000)
         }
+        
+        var image:UIImage? = nil
         if let imagePath = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
-            return UIImage.init(contentsOfFile: imagePath)
+            
+            if let storedImage = UIImageCache.sharedInstance.object(forKey: imagePath as NSString){
+                //print("use cached image")
+                return storedImage
+            }else{
+                print("load image from storrage")
+                image = UIImage.init(contentsOfFile: imagePath)
+                if let storeImage = image{
+                    UIImageCache.sharedInstance.setObject(storeImage, forKey: imagePath as NSString)
+                    return storeImage
+                }
+            }
         }
         return nil
     }
     
     class func pathToResizedImage(fromPath path:String, toSize size:CGSize) -> String? {
         if FileManager.default.fileExists(atPath: path) {
-            print("original exitiert")
+            //print("original exitiert")
             let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height))
             
             if FileManager.default.fileExists(atPath: newFilename) {
-                print("resized file exitiert schon")
+                //print("resized file exitiert schon")
                 return newFilename
             }
             
@@ -89,7 +114,7 @@ extension UIImage {
     }
     
     class func createImage(fromOriginal original: UIImage, withSize size:CGSize) -> UIImage?{
-    
+        print("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
         original.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))

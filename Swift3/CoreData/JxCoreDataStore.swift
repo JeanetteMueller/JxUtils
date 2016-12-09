@@ -18,16 +18,25 @@ class JxCoreDataStore {
     
     let name:String
     let groupIdentifier:String
+    let directory:URL?
     
     init(withStoreName storename: String){
         
         self.name = storename
         self.groupIdentifier = ""
+        self.directory = nil
     }
     init(withStoreName storename: String, andGroupIdentifier identifier:String){
         
         self.name = storename
         self.groupIdentifier = identifier
+        self.directory = nil
+    }
+    init(withStoreName storename: String, inDirectory directory:URL){
+        
+        self.name = storename
+        self.groupIdentifier = ""
+        self.directory = directory
     }
     
     var errorHandler: (Error) -> Void = {_ in }
@@ -35,16 +44,23 @@ class JxCoreDataStore {
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: self.name)
         
-        if !self.groupIdentifier.isEqual(""){
-        
-            if var url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: self.groupIdentifier){
+        if !self.groupIdentifier.isEqual("") && self.directory == nil{
             
+            if var url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: self.groupIdentifier){
+                
                 url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
                 
                 container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
-                
             }
-           
+            
+        }else if self.groupIdentifier.isEqual("") && self.directory != nil{
+            
+            if var url = self.directory{
+                
+                url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
+                
+                container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
+            }
         }
         
         container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
