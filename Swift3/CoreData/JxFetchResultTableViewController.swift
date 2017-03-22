@@ -247,6 +247,14 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         }
         return [NSManagedObject]()
     }
+    func allObjects(for section:Int) -> [NSManagedObject] {
+        
+        
+        if let sectionObjects = self.fetchedResultsController.sections?[section].objects{
+            return sectionObjects as! [NSManagedObject]
+        }
+        return [NSManagedObject]()
+    }
     
     // MARK: Fetch Result Controller Delegate
     
@@ -287,15 +295,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             case .insert:
                 if let newIndexPath = newIndexPath {
                     self.tableView?.insertRows(at: [newIndexPath], with: .middle)
-                    
-                    
-//                    let headerView = self.tableView?.headerView(forSection: newIndexPath.section)
-//                    //if headerView != nil && [headerView respondsToSelector:@selector(update)]) {
-//                    //    [headerView performSelector:@selector(update)];
-//                    //}
-//                    
-//                    headerView?.setNeedsDisplay()
-//                    headerView?.setNeedsLayout()
                 }
                 break;
                 
@@ -306,15 +305,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                     NotificationCenter.default.removeObserver(cell as Any)
                     
                     self.tableView?.deleteRows(at: [indexPath], with: .middle)
-                    
-//                    let headerView = self.tableView?.headerView(forSection: (newIndexPath?.section)!)
-//                    
-//                    //if ([headerView respondsToSelector:@selector(update)]) {
-//                    //    [headerView performSelector:@selector(update)];
-//                    //}
-//                    
-//                    headerView?.setNeedsDisplay()
-//                    headerView?.setNeedsLayout()
                 }
                 break;
                 
@@ -327,27 +317,18 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                         self.configureCell(cell, atIndexPath: indexPath)
                         
                         self.startCell(cell, atIndexPath:indexPath)
-                        
-//                        let headerView = self.tableView?.headerView(forSection: indexPath.section)
-//                        
-//                        //if headerView.respondsTo respondsToSelector:@selector(update)]) {
-//                        //    [headerView performSelector:@selector(update)];
-//                        //}
-//                        
-//                        headerView?.setNeedsDisplay()
-//                        headerView?.setNeedsLayout()
                     }
                 }
                 break;
                 
             case .move:
                 if let deleteIndexPath = indexPath {
-                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .fade)
+                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .none)
                 }
                 
                 if let insertIndexPath = newIndexPath {
                     
-                    self.tableView?.insertRows(at: [insertIndexPath], with: .fade)
+                    self.tableView?.insertRows(at: [insertIndexPath], with: .none)
                 }
                 break;
             }

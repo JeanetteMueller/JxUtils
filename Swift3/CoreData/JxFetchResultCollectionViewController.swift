@@ -96,8 +96,6 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         if let sections = self.fetchedResultsController.sections{
             count = sections.count
         }
-        
-        print("numberOfSections", count)
         return count
     }
     
@@ -113,7 +111,6 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 count = sectionInfo.numberOfObjects
             }
         }
-        print("numberOfItemsInSection", count)
         return count
     }
     
@@ -131,6 +128,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         self.unloadCell(cell, atIndexPath: indexPath)
     }
     
+
     // MARK: Use Cells
     
     func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
@@ -209,15 +207,16 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     }
     
     func object(at indexPath: IndexPath) -> NSManagedObject?{
-        let sections = self.fetchedResultsController.sections
+        if let sections = self.fetchedResultsController.sections{
         
-        if (sections?.count)! > indexPath.section {
-            
-            if let sectionInfo = sections?[indexPath.section] {
+            if sections.count > indexPath.section {
                 
+                let sectionInfo = sections[indexPath.section] as NSFetchedResultsSectionInfo
+                    
                 if sectionInfo.numberOfObjects > indexPath.row {
                     return self.fetchedResultsController.object(at: indexPath)
                 }
+                
             }
         }
         return nil
@@ -277,13 +276,15 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
             else if type == NSFetchedResultsChangeType.delete {
                 print("Delete Section: \(sectionIndex)")
                 
-                blockOperations.append(
-                    BlockOperation(block: { [weak self] in
-                        if let this = self {
-                            this.collectionView!.deleteSections(IndexSet.init(integer: sectionIndex))
-                        }
-                    })
-                )
+                if let numberOfSections = collectionView?.numberOfSections, numberOfSections > 1{
+                    blockOperations.append(
+                        BlockOperation(block: { [weak self] in
+                            if let this = self {
+                                this.collectionView!.deleteSections(IndexSet.init(integer: sectionIndex))
+                            }
+                        })
+                    )
+                }
             }
         }
     }

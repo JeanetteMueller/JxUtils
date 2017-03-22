@@ -23,24 +23,26 @@ class Math {
         var value:Double = 0;
         if let s = string{
             let startParts = s.components(separatedBy: ":")
-            
-            
             var step = 0;
+            
             for part in startParts.reversed() {
                 switch (step) {
                 case 2:
-                    value = value + (Double(part)! * 60 * 60)
+                    value = value + ((part as NSString).doubleValue * 60 * 60)
                     break;
                 case 1:
-                    value = value + (Double(part)! * 60)
+                    value = value + ((part as NSString).doubleValue * 60)
                     break;
                 default:
-                    value = value + Double(part)!
+                    value = value + (part as NSString).doubleValue
                     break;
                 }
                 
                 step = step + 1
             }
+
+            
+            
         }
         return value
     }

@@ -28,13 +28,22 @@ extension UINavigationController {
 
 extension UIView {
     
-    func animateButton(inView view:UIView, toStateWithParameters params:[String:Any]) {
+    func animateView(inView view:UIView, toStateWithParameters params:[String:Any]) {
         self.animateView(inView: view, toStateWithParameters: params) {
-            
+            //empty Completion Block
         }
     }
-    
     func animateView(inView view:UIView, toStateWithParameters params:[String:Any], completion completionBlock: @escaping () -> Swift.Void) {
+    
+        animateView(inView: view, withDuration: 0.4, toStateWithParameters: params, completion: completionBlock)
+    }
+    func animateView(inView view:UIView, withDuration duration:Float, toStateWithParameters params:[String:Any]) {
+        
+        animateView(inView: view, withDuration: duration, toStateWithParameters: params){
+            //empty Completion Block
+        }
+    }
+    func animateView(inView view:UIView, withDuration duration:Float, toStateWithParameters params:[String:Any], completion completionBlock: @escaping () -> Swift.Void) {
         var animate = false
         
         func compare(a: Any, b: Any) -> Bool {

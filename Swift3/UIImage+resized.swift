@@ -19,26 +19,17 @@ class UIImageCache:NSCache<NSString, UIImage> {
     }()
 }
 extension UIImage {
+
     
-    class func getFolderPath() -> String {
-        let paths = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.cachesDirectory, FileManager.SearchPathDomainMask.userDomainMask, true)
-        var documentsDirectory = paths[0] as String
-        
-        if let containerPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: kGroupIdentifier){
-            documentsDirectory = containerPath.path
-        }
-        
-        return documentsDirectory.appending("/images")
-    }
     class func getFilePath(withUrl url:URL) -> String {
         
-        let imageDir = UIImage.getFolderPath()
+        let imageDir = FileHelper.getImagesFolderPath()
         
         return imageDir.appending("/").appending(url.md5())
     }
     class func getFilePath(withUrlString urlString:String) -> String {
         
-        let imageDir = UIImage.getFolderPath()
+        let imageDir = FileHelper.getImagesFolderPath()
         
         return imageDir.appending("/").appending(urlString.md5())
     }
@@ -68,30 +59,35 @@ extension UIImage {
         }
         
         var image:UIImage? = nil
-        if let imagePath = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
+        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
             
-            if let storedImage = UIImageCache.sharedInstance.object(forKey: imagePath as NSString){
-                //print("use cached image")
+            if let storedImage = UIImageCache.sharedInstance.object(forKey: imagePathWithSize as NSString){
+                print("use cached image")
                 return storedImage
             }else{
                 print("load image from storrage")
-                image = UIImage.init(contentsOfFile: imagePath)
+                image = UIImage.init(contentsOfFile: imagePathWithSize)
                 if let storeImage = image{
-                    UIImageCache.sharedInstance.setObject(storeImage, forKey: imagePath as NSString)
+                    
+                    UIImageCache.sharedInstance.setObject(storeImage, forKey: imagePathWithSize as NSString)
                     return storeImage
                 }
             }
         }
         return nil
     }
-    
+    class func pathToResizedImage(fromUrl urlString:String, toSize size:CGSize) -> String? {
+        let sourcePath = UIImage.getFilePath(withUrlString:urlString)
+        
+        return UIImage.pathToResizedImage(fromPath: sourcePath, toSize: size)
+    }
     class func pathToResizedImage(fromPath path:String, toSize size:CGSize) -> String? {
         if FileManager.default.fileExists(atPath: path) {
-            //print("original exitiert")
+//            print("original exitiert")
             let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height))
             
             if FileManager.default.fileExists(atPath: newFilename) {
-                //print("resized file exitiert schon")
+//                print("resized file exitiert schon")
                 return newFilename
             }
             
@@ -99,10 +95,19 @@ extension UIImage {
                 
                 let newImage = UIImage.createImage(fromOriginal: original, withSize: size)
                 
-                if newImage != nil {
-                    let imageData = UIImagePNGRepresentation(newImage!)! as NSData
+                if let saveImage = newImage {
+                    let imageData = UIImagePNGRepresentation(saveImage)! as NSData
                     
                     imageData.write(toFile: newFilename as String, atomically: true)
+                    
+                    UIImageCache.sharedInstance.setObject(saveImage, forKey: newFilename as NSString)
+                    
+                    let url = URL.init(fileURLWithPath: newFilename)
+                    if url.skipBackupAttributeToItemAtURL(true){
+                        //print("downloaded file is excluded from backup")
+                    }else{
+                        print("exclude from backup failed:", url)
+                    }
                     
                     return newFilename;
                 }
@@ -114,7 +119,7 @@ extension UIImage {
     }
     
     class func createImage(fromOriginal original: UIImage, withSize size:CGSize) -> UIImage?{
-        print("create resized image")
+//        print("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
         original.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
