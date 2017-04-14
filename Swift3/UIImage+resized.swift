@@ -62,10 +62,8 @@ extension UIImage {
         if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
             
             if let storedImage = UIImageCache.sharedInstance.object(forKey: imagePathWithSize as NSString){
-                print("use cached image")
                 return storedImage
             }else{
-                print("load image from storrage")
                 image = UIImage.init(contentsOfFile: imagePathWithSize)
                 if let storeImage = image{
                     

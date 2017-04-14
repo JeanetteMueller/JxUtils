@@ -224,16 +224,15 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     
     func object(at indexPath: IndexPath) -> NSManagedObject?{
-        let sections = self.fetchedResultsController.sections
         
-        if (sections?.count)! > indexPath.section {
+        if let sections = self.fetchedResultsController.sections, sections.count > indexPath.section {
             
-            if let sectionInfo = sections?[indexPath.section] {
+            let sectionInfo = sections[indexPath.section]
                 
-                if sectionInfo.numberOfObjects > indexPath.row {
-                    return self.fetchedResultsController.object(at: indexPath)
-                }
+            if sectionInfo.numberOfObjects > indexPath.row {
+                return self.fetchedResultsController.object(at: indexPath)
             }
+            
         }
         return nil
     }
@@ -294,12 +293,14 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             switch(type) {
             case .insert:
                 if let newIndexPath = newIndexPath {
+                    print("insert \(newIndexPath)")
                     self.tableView?.insertRows(at: [newIndexPath], with: .middle)
                 }
                 break;
                 
             case .delete:
                 if let indexPath = indexPath {
+                    print("delete \(indexPath)")
                     let cell = self.tableView?.cellForRow(at: indexPath)
                     
                     NotificationCenter.default.removeObserver(cell as Any)
@@ -310,6 +311,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 
             case .update:
                 if let indexPath = indexPath {
+                    print("update \(indexPath)")
                     if let cell = self.tableView?.cellForRow(at: (indexPath)) {
                         
                         NotificationCenter.default.removeObserver(cell)

@@ -10,9 +10,11 @@ import UIKit
 
 extension UILabel {
     
-    func rectForSubstring(withRange range:NSRange) -> CGRect{
+    func rectForSubstring(withRange range:NSRange) -> CGRect?{
         
-        let textStorage = NSTextStorage.init(attributedString: self.attributedText!)
+        guard let attributedText = attributedText else { return nil }
+        
+        let textStorage = NSTextStorage.init(attributedString: attributedText)
         
         let layoutManager = NSLayoutManager.init()
         textStorage.addLayoutManager(layoutManager)
@@ -21,7 +23,7 @@ extension UILabel {
         textContainer.lineFragmentPadding = 0;
         layoutManager.addTextContainer(textContainer)
         
-        var glyphRange:NSRange = NSRange.init()
+        var glyphRange:NSRange = NSRange()
         
         layoutManager.characterRange(forGlyphRange:range, actualGlyphRange:&glyphRange)
         

@@ -293,7 +293,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
             
             if type == NSFetchedResultsChangeType.insert {
-                print("Insert Object: \(newIndexPath)")
+                print("Insert Object: ", newIndexPath as Any)
                 
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
@@ -304,7 +304,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.update {
-                print("Update Object: \(indexPath)")
+                print("Update Object: ", newIndexPath as Any)
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -314,7 +314,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.move {
-                print("Move Object: \(indexPath)")
+                print("Move Object: ", newIndexPath as Any)
                 
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
@@ -325,7 +325,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.delete {
-                print("Delete Object: \(indexPath)")
+                print("Delete Object: ", newIndexPath as Any)
                 
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
