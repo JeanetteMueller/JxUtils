@@ -28,61 +28,89 @@ extension UINavigationController {
 
 extension UIView {
     
-    func animateView(inView view:UIView, toStateWithParameters params:[String:Any]) {
-        self.animateView(inView: view, toStateWithParameters: params) {
-            //empty Completion Block
-        }
-    }
-    func animateView(inView view:UIView, toStateWithParameters params:[String:Any], completion completionBlock: @escaping () -> Swift.Void) {
-    
-        animateView(inView: view, withDuration: 0.4, toStateWithParameters: params, completion: completionBlock)
-    }
-    func animateView(inView view:UIView, withDuration duration:Float, toStateWithParameters params:[String:Any]) {
+    func animateView(inView view:UIView,
+                     withDuration duration:TimeInterval = 0.4,
+                     toStateWithParameters params:[String:Any] = [String:Any](),
+                     completion completionBlock: (() -> Swift.Void)? = nil) {
         
-        animateView(inView: view, withDuration: duration, toStateWithParameters: params){
-            //empty Completion Block
-        }
-    }
-    func animateView(inView view:UIView, withDuration duration:Float, toStateWithParameters params:[String:Any], completion completionBlock: @escaping () -> Swift.Void) {
         var animate = false
         
         func compare(a: Any, b: Any) -> Bool {
             
-            if let va = a as? Int, let vb = b as? Int            {if va == vb {return true}}
-            else if let va = a as? String, let vb = b as? String {if va == vb {return true}}
-            else if let va = a as? Bool, let vb = b as? Bool     {if va == vb {return true}}
+            if let va = a as? Int, let vb = b as? Int               { return va == vb }
+            else if let va = a as? Float, let vb = b as? Float      { return va == vb }
+            else if let va = a as? CGFloat, let vb = b as? CGFloat  { return va == vb }
+            else if let va = a as? Double, let vb = b as? Double    { return va == vb }
+            else if let va = a as? String, let vb = b as? String    { return va == vb }
+            else if let va = a as? Bool, let vb = b as? Bool        { return va == vb }
+            else if let va = a as? Image, let vb = b as? Image      { return va == vb }
+            else if let va = a as? UIColor, let vb = b as? UIColor  { return va.isEqual(vb)}
             
-            return false
+            
+            //ignore other types
+            return true
         }
         
         for key in params.keys {
-            
-            let isValue = self.value(forKey:key) as Any
-            let shouldBeValue = params[key]  as Any
-            
-            if !compare(a: isValue, b:shouldBeValue) {
-                animate = true
+            if !key.isEqual("flash") && !key.isEqual("unflash"){
+                let isValue = self.value(forKeyPath:key) as Any
+                let shouldBeValue = params[key]  as Any
+                
+                if compare(a: isValue, b:shouldBeValue) == false{
+                    animate = true
+                }
             }
         }
         
         if (animate) {
             
+            self.clipsToBounds = false
+            
             let originalTransform:CGAffineTransform = self.transform;
             
-            UIView.animateKeyframes(withDuration: 0.4,
+            if let flash = params["flash"]  as? UIColor{
+                self.layer.shadowRadius = 0.0
+                self.layer.shadowColor = flash.cgColor
+                self.layer.shadowOffset = CGSize.zero
+                self.layer.shadowOpacity = 1.0
+                
+                let anim = CABasicAnimation.init(keyPath: "shadowRadius")
+                anim.fromValue = 0.0
+                anim.toValue = 8.0
+                anim.duration = (duration * 0.82) / 2
+                anim.autoreverses = true
+                anim.beginTime = CACurrentMediaTime() + (duration * 0.18)
+                self.layer.add(anim, forKey: "shadowRadius")
+                
+            }
+            
+            UIView.animateKeyframes(withDuration: duration,
                                     delay: 0,
                                     options: [.allowUserInteraction, .beginFromCurrentState],
                                     animations: {
                                         
                                         UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.18, animations: {
+                                            
+                                            
+                                            
                                             self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 0, y: 0));
                                             view.layoutIfNeeded()
                                         })
-                                        
-                                        self.setValuesForKeys(params)
-                                        
+                                        UIView.addKeyframe(withRelativeStartTime: 0.15, relativeDuration: 0.03, animations: {
+                                            
+                                            for key in params.keys{
+                                                if !key.isEqual("flash") && !key.isEqual("unflash"){
+                                                    self.setValue(params[key], forKeyPath:key)
+                                                }
+                                            }
+                                        })
                                         UIView.addKeyframe(withRelativeStartTime: 0.18, relativeDuration: 0.25, animations: {
-                                            self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1.1, y: 1.1))
+                                            
+                                            if let flash = params["flash"]  as? UIColor{
+                                                self.backgroundColor = flash
+                                            }
+                                            
+                                            self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1.15, y: 1.15))
                                             view.layoutIfNeeded()
                                         })
                                         UIView.addKeyframe(withRelativeStartTime: 0.43, relativeDuration: 0.25, animations: {
@@ -90,13 +118,27 @@ extension UIView {
                                             view.layoutIfNeeded()
                                         })
                                         UIView.addKeyframe(withRelativeStartTime: 0.68, relativeDuration: 0.32, animations: {
+                                            
+                                            if params["flash"] != nil {
+                                                if let back = params["backgroundColor"]{
+                                                    self.backgroundColor = back as? UIColor
+                                                    
+                                                }else if let flash = params["unflash"]{
+                                                    self.backgroundColor = flash as? UIColor
+                                                }
+                                            }
+                                            
                                             self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1, y: 1))
                                             view.layoutIfNeeded()
                                         })
                                         
                                         
             }, completion: { (done) in
-                completionBlock()
+                
+                if let b = completionBlock{
+                    b()
+                }
+                
             })
         }
     }

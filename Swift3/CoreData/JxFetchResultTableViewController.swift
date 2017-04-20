@@ -158,7 +158,11 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         
         print("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
-    
+    func updateCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
+        print("time to override this method ->", "func updateCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        
+        
+    }
     func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
         
         print("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
@@ -175,33 +179,17 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         }
         
         let fetchRequest:NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: self.entityName!)
+        fetchRequest.returnsObjectsAsFaults = false
+        fetchRequest.fetchBatchSize = 10
         
-        if self.predicates.count > 0 {
-            fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
-        }
-        if let search = self.searchPredicate{
-            
-            var filteredPredicates = self.predicates
-            filteredPredicates.append(search)
-            
-            fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
-        }
         if self.sortDescriptors.count > 0 {
             fetchRequest.sortDescriptors = sortDescriptors;
         }
         
-        fetchRequest.returnsObjectsAsFaults = false
-        if self.fetchLimit > 0 {
-            fetchRequest.fetchLimit = self.fetchLimit
-        }
-        
-        fetchRequest.fetchBatchSize = 10
-        
         let aFetchedResultsController:NSFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                                               managedObjectContext: self.managedObjectContext!,
                                                                                               sectionNameKeyPath: self.sectionKeyPath,
-                                                                                              cacheName: nil)
-        
+                                                                                              cacheName: nil )
         
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
@@ -211,10 +199,29 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     func refetchData() -> Bool{
         
-        _fetchedResultsController = nil
+        let resultController = self.fetchedResultsController
         
+        if self.predicates.count > 0 {
+            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
+        }
+        if let search = self.searchPredicate{
+            
+            var filteredPredicates = self.predicates
+            filteredPredicates.append(search)
+            
+            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
+        }
+        if self.sortDescriptors.count > 0 {
+            resultController.fetchRequest.sortDescriptors = sortDescriptors;
+        }
+        
+        
+        if self.fetchLimit > 0 {
+            resultController.fetchRequest.fetchLimit = self.fetchLimit
+        }
+
         do {
-            try self.fetchedResultsController.performFetch()
+            try resultController.performFetch()
             return true
         } catch {
             let fetchError = error as NSError
@@ -314,11 +321,13 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                     print("update \(indexPath)")
                     if let cell = self.tableView?.cellForRow(at: (indexPath)) {
                         
-                        NotificationCenter.default.removeObserver(cell)
+//                        NotificationCenter.default.removeObserver(cell)
+//                        
+//                        self.configureCell(cell, atIndexPath: indexPath)
+//                        
+//                        self.startCell(cell, atIndexPath:indexPath)
                         
-                        self.configureCell(cell, atIndexPath: indexPath)
-                        
-                        self.startCell(cell, atIndexPath:indexPath)
+                        self.updateCell(cell, atIndexPath:indexPath)
                     }
                 }
                 break;

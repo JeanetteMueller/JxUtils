@@ -11,7 +11,7 @@ import SVGKit
 
 extension UIImage {
 
-    static func svgImage(withName name:String, andSize size:CGSize?=nil) -> UIImage?{
+    static func svgImage(withName name:String, andSize size:CGSize?=nil, renderingMode mode:UIImageRenderingMode = .alwaysTemplate) -> UIImage?{
         
         if let svg = SVGKImage.init(named: name){
             
@@ -20,7 +20,7 @@ extension UIImage {
             }
             
             if let image = svg.uiImage{
-                return image.withRenderingMode(.alwaysTemplate)
+                return image.withRenderingMode(mode)
             }
         }
         return nil
