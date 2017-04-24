@@ -180,15 +180,16 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         
         fetchRequest.fetchBatchSize = 10
         
-        let aFetchedResultsController:NSFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                                                              managedObjectContext: self.managedObjectContext!,
-                                                                                              sectionNameKeyPath: self.sectionKeyPath,
-                                                                                              cacheName: nil)
-        
-        
-        aFetchedResultsController.delegate = self
-        _fetchedResultsController = aFetchedResultsController
-        
+        if let context = self.managedObjectContext{
+            let aFetchedResultsController:NSFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                                                                  managedObjectContext: context,
+                                                                                                  sectionNameKeyPath: self.sectionKeyPath,
+                                                                                                  cacheName: nil)
+            
+            
+            aFetchedResultsController.delegate = self
+            _fetchedResultsController = aFetchedResultsController
+        }
         return _fetchedResultsController!
     }
     

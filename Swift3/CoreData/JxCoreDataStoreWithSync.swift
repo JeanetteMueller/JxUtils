@@ -13,7 +13,7 @@ import Ensembles
 
 class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelegate {
     
-    var ensemble: CDEPersistentStoreEnsemble!
+    var ensemble: CDEPersistentStoreEnsemble?
     
     func enableSync(){
         
@@ -29,7 +29,7 @@ class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelega
         // Setup Ensemble
         let cloudFileSystem = CDEICloudFileSystem(ubiquityContainerIdentifier: nil)
         ensemble = CDEPersistentStoreEnsemble(ensembleIdentifier: self.name, persistentStore: storeURL, managedObjectModelURL: modelURL!, cloudFileSystem: cloudFileSystem)
-        ensemble.delegate = self
+        ensemble?.delegate = self
         
 
         
@@ -37,7 +37,6 @@ class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelega
         NotificationCenter.default.addObserver(self, selector:#selector(localSaveOccurred(_:)), name:NSNotification.Name.CDEMonitoredManagedObjectContextDidSave, object:nil)
         NotificationCenter.default.addObserver(self, selector:#selector(cloudDataDidDownload(_:)), name:NSNotification.Name.CDEICloudFileSystemDidDownloadFiles, object:nil)
         
-
     }
 
     // MARK: Notification Handlers
@@ -55,29 +54,39 @@ class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelega
             print("JxCoreDataStore sync completion: cloudDataDidDownload")
         }
     }
+    
     // MARK: Ensembles
+    
     var syncing = false
     
     func sync(_ completion: ((Void) -> Void)?) {
         DispatchQueue.main.async {
             if !self.syncing{
-                self.syncing = true
-                if !self.ensemble.isLeeched {
+                
+                if let e = self.ensemble{
                     
-                    self.ensemble.leechPersistentStore { error in
-                        self.syncing = false
-                        if error != nil{
-                            print("Could not leech to ensemble: ", error as Any)
+                    if e.isMerging == false{
+                        
+                        self.syncing = true
+                        
+                        if !e.isLeeched {
+                            
+                            e.leechPersistentStore { error in
+                                self.syncing = false
+                                if error != nil{
+                                    print("Could not leech to ensemble: ", error as Any)
+                                }
+                                completion?()
+                            }
+                        } else {
+                            e.merge { error in
+                                self.syncing = false
+                                if error != nil{
+                                    print("Could not merge to ensemble: ", error as Any)
+                                }
+                                completion?()
+                            }
                         }
-                        completion?()
-                    }
-                } else {
-                    self.ensemble.merge { error in
-                        self.syncing = false
-                        if error != nil{
-                            print("Could not merge to ensemble: ", error as Any)
-                        }
-                        completion?()
                     }
                 }
             }
