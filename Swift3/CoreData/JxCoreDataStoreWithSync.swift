@@ -20,22 +20,18 @@ class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelega
         CDESetCurrentLoggingLevel(CDELoggingLevel.warning.rawValue)// verbose.rawValue)
         
         let modelURL = Bundle.main.url(forResource: self.name, withExtension: "momd")
-        
-        
         let storeURL = self.storeURL()
 
-        
-        
         // Setup Ensemble
+        
         let cloudFileSystem = CDEICloudFileSystem(ubiquityContainerIdentifier: nil)
         ensemble = CDEPersistentStoreEnsemble(ensembleIdentifier: self.name, persistentStore: storeURL, managedObjectModelURL: modelURL!, cloudFileSystem: cloudFileSystem)
         ensemble?.delegate = self
         
-
-        
         // Listen for local saves, and trigger merges
-        NotificationCenter.default.addObserver(self, selector:#selector(localSaveOccurred(_:)), name:NSNotification.Name.CDEMonitoredManagedObjectContextDidSave, object:nil)
-        NotificationCenter.default.addObserver(self, selector:#selector(cloudDataDidDownload(_:)), name:NSNotification.Name.CDEICloudFileSystemDidDownloadFiles, object:nil)
+        
+        NotificationCenter.default.addObserver(self, selector:#selector(self.localSaveOccurred), name:NSNotification.Name.CDEMonitoredManagedObjectContextDidSave, object:nil)
+        NotificationCenter.default.addObserver(self, selector:#selector(self.cloudDataDidDownload), name:NSNotification.Name.CDEICloudFileSystemDidDownloadFiles, object:nil)
         
     }
 
@@ -43,14 +39,14 @@ class JxCoreDataStoreWithSync: JxCoreDataStore, CDEPersistentStoreEnsembleDelega
     
     func localSaveOccurred(_ notif: Notification) {
         print("is mainthread", Thread.isMainThread)
-        self.sync { (info) in
+        self.sync { () in
             print("JxCoreDataStore sync completion: localSaveOccurred")
         }
     }
     
     func cloudDataDidDownload(_ notif: Notification) {
         print("is mainthread", Thread.isMainThread)
-        self.sync{ (info) in
+        self.sync{ () in
             print("JxCoreDataStore sync completion: cloudDataDidDownload")
         }
     }

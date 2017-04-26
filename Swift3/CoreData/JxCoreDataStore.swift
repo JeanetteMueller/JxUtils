@@ -27,23 +27,25 @@ class JxCoreDataStore:NSObject {
         self.directory = directory
     }
 
-    var errorHandler: (Error) -> Void = {_ in }
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: self.name)
         
         if let url = self.storeURL(){
-                container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
+            container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
+            
+            container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
+                if let error = error {
+                    print("CoreData error", error, error._userInfo as Any)
+                    
+                    self?.deleteDatabasse()
+                    abort()
+                }
+            })
+            return container
         }
         
-        
-        container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
-            if let error = error {
-                print("CoreData error", error, error._userInfo as Any)
-                self?.errorHandler(error)
-            }
-        })
-        return container
+        return self.persistentContainer
     }()
     
     func storeURL() -> URL?{
@@ -88,37 +90,16 @@ class JxCoreDataStore:NSObject {
     
     func deleteDatabasse(){
         
-        
-        if !self.groupIdentifier.isEqual("") && self.directory == nil{
+        if let url = self.storeURL(){
             
-            if var url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: self.groupIdentifier){
-                
-                url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
-                
-                do {
-                    try FileManager.default.removeItem(atPath: url.path)
-                } catch let error as NSError {
-                    print(error)
-                }
-                
-            }
-            
-        }else if self.groupIdentifier.isEqual("") && self.directory != nil{
-            
-            if var url = self.directory{
-                
-                url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
-                
-                do {
-                    try FileManager.default.removeItem(atPath: url.path)
-                } catch let error as NSError {
-                    print(error)
-                }
+            do {
+                try FileManager.default.removeItem(atPath: url.path)
+            } catch let error as NSError {
+                print(error)
             }
         }
-        
     }
-    
+
     func getURIPrepresentation(forID idString: String, andEntityName entityName: String) -> URL?{
         let urlString = self.getStringPrepresentation(forID: idString, andEntityName:entityName)
         

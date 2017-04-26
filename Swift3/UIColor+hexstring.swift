@@ -10,6 +10,9 @@ import UIKit
 
 extension UIColor{
     
+    class func colorFromHex(_ hex:String) -> UIColor {
+        return UIColor.fromHexstring(hex: hex)
+    }
     class func fromHexstring(hex:String) -> UIColor {
         
         var cString:String = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
