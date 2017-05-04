@@ -158,47 +158,49 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         }
         
         let fetchRequest:NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: self.entityName!)
+        fetchRequest.returnsObjectsAsFaults = false
+        fetchRequest.fetchBatchSize = 10
         
-        if self.predicates.count > 0 {
-            fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
-        }
-        if let search = self.searchPredicate{
-            
-            var filteredPredicates = self.predicates
-            filteredPredicates.append(search)
-            
-            fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
-        }
         if self.sortDescriptors.count > 0 {
             fetchRequest.sortDescriptors = sortDescriptors;
         }
-        
-        fetchRequest.returnsObjectsAsFaults = false
-        if self.fetchLimit > 0 {
-            fetchRequest.fetchLimit = self.fetchLimit
-        }
-        
-        fetchRequest.fetchBatchSize = 10
         
         if let context = self.managedObjectContext{
             let aFetchedResultsController:NSFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                                                   managedObjectContext: context,
                                                                                                   sectionNameKeyPath: self.sectionKeyPath,
-                                                                                                  cacheName: nil)
-            
+                                                                                                  cacheName: nil )
             
             aFetchedResultsController.delegate = self
             _fetchedResultsController = aFetchedResultsController
         }
         return _fetchedResultsController!
     }
-    
     func refetchData() -> Bool{
         
-        _fetchedResultsController = nil
+        let resultController = self.fetchedResultsController
+        
+        if self.predicates.count > 0 {
+            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
+        }
+        if let search = self.searchPredicate{
+            
+            var filteredPredicates = self.predicates
+            filteredPredicates.append(search)
+            
+            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
+        }
+        if self.sortDescriptors.count > 0 {
+            resultController.fetchRequest.sortDescriptors = sortDescriptors;
+        }
+        
+        
+        if self.fetchLimit > 0 {
+            resultController.fetchRequest.fetchLimit = self.fetchLimit
+        }
         
         do {
-            try self.fetchedResultsController.performFetch()
+            try resultController.performFetch()
             return true
         } catch {
             let fetchError = error as NSError

@@ -25,29 +25,40 @@ class JxCoreDataStore:NSObject {
         self.name = storename
         self.groupIdentifier = identifier
         self.directory = directory
+        
+        super.init()
+        self.setupNotifications()
     }
 
+    func managedObjectID(forURIRepresentation uri: URL) -> NSManagedObjectID?{
+        
+        return self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+    }
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: self.name)
-        
-        if let url = self.storeURL(){
-            container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
-            
-            container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
-                if let error = error {
-                    print("CoreData error", error, error._userInfo as Any)
-                    
-                    self?.deleteDatabasse()
-                    abort()
-                }
-            })
-            return container
-        }
-        
-        return self.persistentContainer
+    lazy var managedObjectModel: NSManagedObjectModel = {
+        // 1
+        let modelURL = Bundle.main.url(forResource: self.name, withExtension: "momd")!
+        return NSManagedObjectModel(contentsOf: modelURL)!
     }()
-    
+    lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
+        let url = self.storeURL()
+        do {
+            // If your looking for any kind of migration then here is the time to pass it to the options
+            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+        } catch let  error as NSError {
+            print("Ops there was an error \(error.localizedDescription)")
+            abort()
+        }
+        return coordinator
+    }()
+    func setupNotifications(){
+        NotificationCenter.default.addObserver(self, selector:#selector(self.contextDidSave), name:NSNotification.Name.NSManagedObjectContextDidSave, object:nil)
+    }
+    func contextDidSave(_ notification:Notification){
+        
+        self.mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
+    }
     func storeURL() -> URL?{
         if !self.groupIdentifier.isEqual("") && self.directory == nil{
             
@@ -70,12 +81,16 @@ class JxCoreDataStore:NSObject {
         return nil
     }
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
-        self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-        return self.persistentContainer.viewContext
+        
+        var context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        context.persistentStoreCoordinator = self.persistentStoreCoordinator
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        return context
     }()
     lazy var newPrivateContext: NSManagedObjectContext = {
-        let context = self.persistentContainer.newBackgroundContext()
-        context.automaticallyMergesChangesFromParent = true
+        var context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        context.persistentStoreCoordinator = self.persistentStoreCoordinator
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return context
     }()
     
@@ -85,7 +100,11 @@ class JxCoreDataStore:NSObject {
         }
     }
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
-        self.persistentContainer.performBackgroundTask(block)
+        
+        DispatchQueue.global(qos: .background).async {
+            block(self.newPrivateContext)
+            
+        }
     }
     
     func deleteDatabasse(){
@@ -111,7 +130,7 @@ class JxCoreDataStore:NSObject {
         return URL(string: urlString)
     }
     func getStoreUUID() -> String{
-        let storeCoordinator = self.persistentContainer.persistentStoreCoordinator;
+        let storeCoordinator = self.persistentStoreCoordinator
         
         let metaData = storeCoordinator.metadata(for: storeCoordinator.persistentStores.first!)
         
