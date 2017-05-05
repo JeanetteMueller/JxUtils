@@ -204,7 +204,10 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         
         if self.predicates.count > 0 {
             resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
+        }else{
+            resultController.fetchRequest.predicate = nil
         }
+        
         if let search = self.searchPredicate{
             
             var filteredPredicates = self.predicates
@@ -212,11 +215,14 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             
             resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
         }
+        
         if self.sortDescriptors.count > 0 {
             resultController.fetchRequest.sortDescriptors = sortDescriptors;
+        }else{
+            resultController.fetchRequest.sortDescriptors = nil
         }
         
-        
+        resultController.fetchRequest.fetchLimit = 0
         if self.fetchLimit > 0 {
             resultController.fetchRequest.fetchLimit = self.fetchLimit
         }

@@ -16,6 +16,7 @@ extension Notification.Name {
 
 class JxCoreDataStore:NSObject {
     
+    let useNewFunctions: Bool = false
     let name:String
     let groupIdentifier:String
     let directory:URL?
@@ -27,18 +28,27 @@ class JxCoreDataStore:NSObject {
         self.directory = directory
         
         super.init()
-        self.setupNotifications()
+        
+        if #available(iOS 10.0, *), useNewFunctions == true {
+            
+        }else{
+            self.setupNotifications()
+        }
     }
 
     func managedObjectID(forURIRepresentation uri: URL) -> NSManagedObjectID?{
+        if #available(iOS 10.0, *), useNewFunctions == true {
+            return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+        }
         
         return self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {
-        // 1
+        
         let modelURL = Bundle.main.url(forResource: self.name, withExtension: "momd")!
         return NSManagedObjectModel(contentsOf: modelURL)!
+        
     }()
     lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
@@ -81,18 +91,27 @@ class JxCoreDataStore:NSObject {
         return nil
     }
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
-        
+        if #available(iOS 10.0, *), self.useNewFunctions == true {
+            self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+            return self.persistentContainer.viewContext
+        }
         var context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         context.persistentStoreCoordinator = self.persistentStoreCoordinator
         context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return context
     }()
-    lazy var newPrivateContext: NSManagedObjectContext = {
-        var context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    
+    func newPrivateContext() -> NSManagedObjectContext {
+        if #available(iOS 10.0, *), useNewFunctions == true {
+            let context = self.persistentContainer.newBackgroundContext()
+            context.automaticallyMergesChangesFromParent = true
+            return context
+        }
+        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         context.persistentStoreCoordinator = self.persistentStoreCoordinator
         context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return context
-    }()
+    }
     
     func performForegroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         self.mainManagedObjectContext.perform {
@@ -100,10 +119,12 @@ class JxCoreDataStore:NSObject {
         }
     }
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
-        
-        DispatchQueue.global(qos: .background).async {
-            block(self.newPrivateContext)
-            
+        if #available(iOS 10.0, *), useNewFunctions == true {
+            self.persistentContainer.performBackgroundTask(block)
+        }else{
+            DispatchQueue.global(qos: .background).async {
+                block(self.newPrivateContext())
+            }
         }
     }
     
@@ -146,4 +167,27 @@ class JxCoreDataStore:NSObject {
         
         return String(format: "x-coredata://%@/%@/%@", uuid, entityName, idString)
     }
+    
+    // MARK: iOS 10 Funktionen
+    
+    @available(iOS 10.0, *)
+    private lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: self.name)
+        
+        if let url = self.storeURL(){
+            container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
+            
+            container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
+                if let error = error {
+                    print("CoreData error", error, error._userInfo as Any)
+                    
+                    self?.deleteDatabasse()
+                    abort()
+                }
+            })
+            return container
+        }
+        
+        return self.persistentContainer
+    }()
 }

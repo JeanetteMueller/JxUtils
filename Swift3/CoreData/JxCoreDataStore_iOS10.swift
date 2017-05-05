@@ -33,7 +33,7 @@ class JxCoreDataStore:NSObject {
         return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
     }
 
-    privatelazy var persistentContainer: NSPersistentContainer = {
+    private lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: self.name)
         
         if let url = self.storeURL(){
