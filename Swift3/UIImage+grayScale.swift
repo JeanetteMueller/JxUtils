@@ -31,7 +31,7 @@ extension UIImage {
             if let imageRef = context.makeImage(){
                 
                 // Create a new UIImage object
-                let newImage = UIImage.init(cgImage: imageRef)
+                let newImage = UIImage(cgImage: imageRef)
                 
                 // Return the new grayscale image
                 return newImage

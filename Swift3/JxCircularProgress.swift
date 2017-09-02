@@ -55,13 +55,13 @@ class JxCircularProgress: UIView {
             self.draw(self.bounds)
         }
         
-        completeCircle?.path = UIBezierPath.init(arcCenter: center, radius: radius, startAngle: radiantFrom(0), endAngle: radiantFrom(360), clockwise: true).cgPath
+        completeCircle?.path = UIBezierPath(arcCenter: center, radius: radius, startAngle: radiantFrom(0), endAngle: radiantFrom(360), clockwise: true).cgPath
         completeCircle?.strokeColor = completeCircleColor.cgColor
         completeCircle?.lineWidth = lineWidth
         
         
         
-        circle?.path = UIBezierPath.init(arcCenter: center,
+        circle?.path = UIBezierPath(arcCenter: center,
                                          radius: radius,
                                          startAngle: radiantFrom(startDegree),
                                          endAngle: radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
@@ -72,14 +72,14 @@ class JxCircularProgress: UIView {
         
         circle?.strokeColor = circleColor.cgColor
         circle?.lineWidth = lineWidth
-        circle?.shadowOffset = CGSize.init(width: 0, height: 1)
+        circle?.shadowOffset = CGSize(width: 0, height: 1)
         circle?.shadowColor = shadowColor.cgColor
         circle?.shadowRadius = 4
         circle?.shadowOpacity = 0.5
 
         
         if duration > 0.0 {
-            let circleAnimation = CABasicAnimation.init(keyPath: "strokeEnd")
+            let circleAnimation = CABasicAnimation(keyPath: "strokeEnd")
             circleAnimation.fromValue = 0
             circleAnimation.toValue = 1
             circleAnimation.duration = CFTimeInterval(duration)
@@ -100,13 +100,13 @@ class JxCircularProgress: UIView {
                                         y: center.y + (hypotenuse-(lineWidth/2)) * sin(degree) - dotSize/2,
                                         width: dotSize, height: dotSize)
             
-            dot?.path = UIBezierPath.init(ovalIn: dotRect).cgPath;
+            dot?.path = UIBezierPath(ovalIn: dotRect).cgPath;
             
             if duration > 0.0 {
-                let dotAnimation:CAKeyframeAnimation = CAKeyframeAnimation.init(keyPath: "position")
+                let dotAnimation:CAKeyframeAnimation = CAKeyframeAnimation(keyPath: "position")
                 dotAnimation.duration = CFTimeInterval(duration)
                 
-                dotAnimation.path = UIBezierPath.init(arcCenter: CGPoint(x: center.x - dotRect.origin.x - dotSize/2,
+                dotAnimation.path = UIBezierPath(arcCenter: CGPoint(x: center.x - dotRect.origin.x - dotSize/2,
                                                                          y: center.y - dotRect.origin.y - dotSize/2),
                                                       radius: radius,
                                                       startAngle:radiantFrom(startDegree),
@@ -141,9 +141,9 @@ class JxCircularProgress: UIView {
                                           width: textSize.width,
                                           height: textSize.height);
             
-            let textAnimation = CAKeyframeAnimation.init(keyPath: "position")
+            let textAnimation = CAKeyframeAnimation(keyPath: "position")
             textAnimation.duration = CFTimeInterval(duration);
-            textAnimation.path = UIBezierPath.init(arcCenter: CGPoint(x: center.x, y: center.y ),
+            textAnimation.path = UIBezierPath(arcCenter: CGPoint(x: center.x, y: center.y ),
                                                    radius:radius+distance,
                                                    startAngle:radiantFrom(startDegree),
                                                    endAngle:radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
@@ -167,7 +167,7 @@ class JxCircularProgress: UIView {
     
     required init?(coder aDecoder: NSCoder){
         
-        let textLabel = UILabel.init(frame: CGRect(x: 0, y: 0, width: 70, height: 20))
+        let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 70, height: 20))
         textLabel.backgroundColor = UIColor.clear
         textLabel.textColor = UIColor.blue
         textLabel.textAlignment = .center
@@ -182,7 +182,7 @@ class JxCircularProgress: UIView {
     
     override init(frame: CGRect){
         
-        let textLabel = UILabel.init(frame: CGRect(x: 0, y: 0, width: 70, height: 20))
+        let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 70, height: 20))
         textLabel.backgroundColor = UIColor.clear
         textLabel.textColor = UIColor.blue
         textLabel.textAlignment = .center

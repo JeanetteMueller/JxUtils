@@ -79,19 +79,23 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         firstTimeOpened = false
+        #if os(OSX) || os(iOS)
         self.tableView?.scrollsToTop = true
+        #endif
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        
+        #if os(OSX) || os(iOS)
         self.tableView?.scrollsToTop = false
-        
+        #endif
         
         super.viewWillDisappear(animated)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
+        #if os(OSX) || os(iOS)
         self.tableView?.scrollsToTop = false
+        #endif
         
         _fetchedResultsController.delegate = nil
         
@@ -203,19 +207,17 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         let resultController = self.fetchedResultsController
         
         if self.predicates.count > 0 {
-            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
+            resultController.fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: self.predicates)
         }else{
             resultController.fetchRequest.predicate = nil
         }
-        
         if let search = self.searchPredicate{
             
             var filteredPredicates = self.predicates
             filteredPredicates.append(search)
             
-            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
+            resultController.fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: filteredPredicates)
         }
-        
         if self.sortDescriptors.count > 0 {
             resultController.fetchRequest.sortDescriptors = sortDescriptors;
         }else{
@@ -246,7 +248,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             if sectionInfo.numberOfObjects > indexPath.row {
                 return self.fetchedResultsController.object(at: indexPath)
             }
-            
         }
         return nil
     }
@@ -261,7 +262,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         return [NSManagedObject]()
     }
     func allObjects(for section:Int) -> [NSManagedObject] {
-        
         
         if let sectionObjects = self.fetchedResultsController.sections?[section].objects{
             return sectionObjects as! [NSManagedObject]
@@ -284,16 +284,16 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
             
             switch(type) {
             case .insert:
-                self.tableView?.insertSections(IndexSet.init(integer: sectionIndex), with: .middle)
-                break;
+                self.tableView?.insertSections(IndexSet(integer: sectionIndex), with: .middle)
+                break
                 
             case .delete:
-                self.tableView?.deleteSections(IndexSet.init(integer: sectionIndex), with: .middle)
-                break;
+                self.tableView?.deleteSections(IndexSet(integer: sectionIndex), with: .middle)
+                break
             default:
                 
                 break;
@@ -340,14 +340,17 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 break;
                 
             case .move:
-                if let deleteIndexPath = indexPath {
-                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .none)
+                if let deleteIndexPath = indexPath, let insertIndexPath = newIndexPath {
+                    self.tableView?.moveRow(at: deleteIndexPath, to: insertIndexPath)
                 }
-                
-                if let insertIndexPath = newIndexPath {
-                    
-                    self.tableView?.insertRows(at: [insertIndexPath], with: .none)
-                }
+//                if let deleteIndexPath = indexPath {
+//                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .none)
+//                }
+//                
+//                if let insertIndexPath = newIndexPath {
+//                    
+//                    self.tableView?.insertRows(at: [insertIndexPath], with: .none)
+//                }
                 break;
             }
         }

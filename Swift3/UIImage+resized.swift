@@ -9,7 +9,7 @@
 import UIKit
 
 class UIImageCache:NSCache<NSString, UIImage> {
-    static let sharedInstance: UIImageCache = {
+    static let shared: UIImageCache = {
         
         let instance = UIImageCache()
         
@@ -33,19 +33,23 @@ extension UIImage {
         
         return imageDir.appending("/").appending(urlString.md5())
     }
-    class func getImage(withImageString imageString:String, andSize size:CGSize?) -> UIImage?{
+    class func getImage(withImageString imageString:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
         
         let imagePath = UIImage.getFilePath(withUrlString: imageString)
         
-        return UIImage.getImage(withImagePath: imagePath, andSize: size)
+        return UIImage.getImage(withImagePath: imagePath, andSize: size, useCache: cache)
     }
-    class func getImage(withImagePath imagePath:String, andSize size:CGSize?) -> UIImage?{
+    class func getImage(withImagePath imagePath:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
         var useSize:CGSize
         
         if var mySize = size {
             
-            while  mySize.width < 50 || mySize.height < 50 {
-                mySize = CGSize(width: mySize.width*2, height: mySize.height*2)
+            
+            
+            
+            if mySize.width < 50 || mySize.height < 50 {
+                
+                mySize = CGSize(width: 50, height: 50)
             }
             
             let factor = mySize.width / mySize.height
@@ -59,15 +63,16 @@ extension UIImage {
         }
         
         var image:UIImage? = nil
-        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize){
+        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize, useCache: cache){
             
-            if let storedImage = UIImageCache.sharedInstance.object(forKey: imagePathWithSize as NSString){
+            if let storedImage = UIImageCache.shared.object(forKey: imagePathWithSize as NSString){
                 return storedImage
             }else{
-                image = UIImage.init(contentsOfFile: imagePathWithSize)
+                image = UIImage(contentsOfFile: imagePathWithSize)
                 if let storeImage = image{
-                    
-                    UIImageCache.sharedInstance.setObject(storeImage, forKey: imagePathWithSize as NSString)
+                    if cache{
+                        UIImageCache.shared.setObject(storeImage, forKey: imagePathWithSize as NSString)
+                    }
                     return storeImage
                 }
             }
@@ -79,17 +84,39 @@ extension UIImage {
         
         return UIImage.pathToResizedImage(fromPath: sourcePath, toSize: size)
     }
-    class func pathToResizedImage(fromPath path:String, toSize size:CGSize) -> String? {
+    class func pathToResizedImage(fromPath path:String, toSize size:CGSize, fileExtension ext:String = "png", useCache cache:Bool = true) -> String? {
         if FileManager.default.fileExists(atPath: path) {
-//            print("original exitiert")
-            let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height))
+
+            let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height)).appending(".").appending(ext)
             
             if FileManager.default.fileExists(atPath: newFilename) {
-//                print("resized file exitiert schon")
+                //print("resized file exitiert schon", newFilename)
                 return newFilename
             }
             
-            if let original = UIImage.init(contentsOfFile: path){
+            var originalImagePath = path
+            
+            if size.width == size.height{
+                //quadrat
+                if size.width < 1000{
+                    
+                    for x in [1000, 800, 600, 500, 400, 300, 240, 220, 200, 180, 160, 150, 140, 120, 110, 100, 80]{
+                        
+//                        print("imagesize with width", x)
+                        if size.width < CGFloat(x){
+                            let allReadyResizedVersionPath = path.appending("_").appendingFormat("%d", x).appending("-").appendingFormat("%d", x).appending(".").appending(ext)
+                            
+                            if FileManager.default.fileExists(atPath: allReadyResizedVersionPath) {
+                                print("verwende als original eine bereits verkleinerte version um speicher zu schonen", newFilename)
+                                originalImagePath = allReadyResizedVersionPath
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if let original = UIImage(contentsOfFile: originalImagePath){
                 
                 let newImage = UIImage.createImage(fromOriginal: original, withSize: size)
                 
@@ -98,20 +125,20 @@ extension UIImage {
                     
                     imageData.write(toFile: newFilename as String, atomically: true)
                     
-                    UIImageCache.sharedInstance.setObject(saveImage, forKey: newFilename as NSString)
-                    
+                    if cache {
+                        UIImageCache.shared.setObject(saveImage, forKey: newFilename as NSString)
+                    }
                     let url = URL.init(fileURLWithPath: newFilename)
+                    
                     if url.skipBackupAttributeToItemAtURL(true){
                         //print("downloaded file is excluded from backup")
                     }else{
-                        print("exclude from backup failed:", url)
+                        print("UIImage: pathToResizedImage - exclude from backup failed:", url)
                     }
                     
                     return newFilename;
                 }
             }
-        }else{
-            print("kann original nicht finden")
         }
         return nil
     }

@@ -27,7 +27,6 @@ class JxCoreDataStore:NSObject {
         self.directory = directory
     }
 
-    
     func managedObjectID(forURIRepresentation uri: URL) -> NSManagedObjectID{
 
         return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
@@ -43,7 +42,7 @@ class JxCoreDataStore:NSObject {
                 if let error = error {
                     print("CoreData error", error, error._userInfo as Any)
                     
-                    self?.deleteDatabasse()
+//                    self?.deleteDatabasse()
                     abort()
                 }
             })
@@ -74,10 +73,12 @@ class JxCoreDataStore:NSObject {
         }
         return nil
     }
+    
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
         self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
         return self.persistentContainer.viewContext
     }()
+    
     lazy var newPrivateContext: NSManagedObjectContext = {
         let context = self.persistentContainer.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = true
@@ -89,6 +90,7 @@ class JxCoreDataStore:NSObject {
             block(self.mainManagedObjectContext)
         }
     }
+    
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         self.persistentContainer.performBackgroundTask(block)
     }
@@ -110,11 +112,13 @@ class JxCoreDataStore:NSObject {
         
         return URL(string: urlString)
     }
+    
     func getURIPrepresentation(forID idString: String, andEntityName entityName: String, andStoreUUID uuid: String) -> URL?{
         let urlString = self.getStringPrepresentation(forID: idString, andEntityName:entityName, andStoreUUID: uuid)
         
         return URL(string: urlString)
     }
+    
     func getStoreUUID() -> String{
         let storeCoordinator = self.persistentContainer.persistentStoreCoordinator;
         
@@ -122,12 +126,12 @@ class JxCoreDataStore:NSObject {
         
         return metaData[NSStoreUUIDKey] as! String
     }
+    
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String) -> String{
-        
-        //let storeCoordinator = persistentStoreCoordinator()
         
         return String(format: "x-coredata://%@/%@/%@", self.getStoreUUID() as CVarArg, entityName, idString)
     }
+    
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String, andStoreUUID uuid: String) -> String{
         
         return String(format: "x-coredata://%@/%@/%@", uuid, entityName, idString)

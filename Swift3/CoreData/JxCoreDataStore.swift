@@ -10,13 +10,9 @@ import Foundation
 import UIKit
 import CoreData
 
-extension Notification.Name {
-    static let JxCoreDataStoreDidChange = Notification.Name("JxCoreDataStoreDidChange")
-}
-
 class JxCoreDataStore:NSObject {
     
-    let useNewFunctions: Bool = false
+    let useNewFunctions: Bool = true
     let name:String
     let groupIdentifier:String
     let directory:URL?
@@ -55,7 +51,10 @@ class JxCoreDataStore:NSObject {
         let url = self.storeURL()
         do {
             // If your looking for any kind of migration then here is the time to pass it to the options
-            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: nil)
+            let options = [ NSMigratePersistentStoresAutomaticallyOption : true,
+                            NSInferMappingModelAutomaticallyOption : true ]
+            
+            try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: options)
         } catch let  error as NSError {
             print("Ops there was an error \(error.localizedDescription)")
             abort()
@@ -66,15 +65,22 @@ class JxCoreDataStore:NSObject {
         NotificationCenter.default.addObserver(self, selector:#selector(self.contextDidSave), name:NSNotification.Name.NSManagedObjectContextDidSave, object:nil)
     }
     func contextDidSave(_ notification:Notification){
+        self.mainManagedObjectContext.perform {
+            self.mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
+        }
         
-        self.mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
     }
     func storeURL() -> URL?{
+
         if !self.groupIdentifier.isEqual("") && self.directory == nil{
             
             if var url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: self.groupIdentifier){
                 
-                url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
+                #if os(tvOS)
+                    url = url.appendingPathComponent("Library/Caches")
+                #endif
+                
+                url.appendPathComponent(String(format: "%@.sqlite", self.name))
                 
                 return url
             }
@@ -83,11 +89,12 @@ class JxCoreDataStore:NSObject {
             
             if var url = self.directory{
                 
-                url.appendPathComponent(String.init(format: "%@.sqlite", self.name))
+                url.appendPathComponent(String(format: "%@.sqlite", self.name))
                 
                 return url
             }
         }
+
         return nil
     }
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
@@ -122,16 +129,16 @@ class JxCoreDataStore:NSObject {
         if #available(iOS 10.0, *), useNewFunctions == true {
             self.persistentContainer.performBackgroundTask(block)
         }else{
-            DispatchQueue.global(qos: .background).async {
-                block(self.newPrivateContext())
+            
+            let pContext = self.newPrivateContext()
+            pContext.perform {
+                block(pContext)
             }
         }
     }
     
     func deleteDatabasse(){
-        
         if let url = self.storeURL(){
-            
             do {
                 try FileManager.default.removeItem(atPath: url.path)
             } catch let error as NSError {
@@ -158,13 +165,9 @@ class JxCoreDataStore:NSObject {
         return metaData[NSStoreUUIDKey] as! String
     }
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String) -> String{
-        
-        //let storeCoordinator = persistentStoreCoordinator()
-        
         return String(format: "x-coredata://%@/%@/%@", self.getStoreUUID() as CVarArg, entityName, idString)
     }
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String, andStoreUUID uuid: String) -> String{
-        
         return String(format: "x-coredata://%@/%@/%@", uuid, entityName, idString)
     }
     
@@ -175,13 +178,18 @@ class JxCoreDataStore:NSObject {
         let container = NSPersistentContainer(name: self.name)
         
         if let url = self.storeURL(){
-            container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: url)]
+            
+            var description = NSPersistentStoreDescription(url: url)
+            description.shouldInferMappingModelAutomatically = true
+            description.shouldMigrateStoreAutomatically = true
+            
+            container.persistentStoreDescriptions = [description]
             
             container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
                 if let error = error {
                     print("CoreData error", error, error._userInfo as Any)
                     
-                    self?.deleteDatabasse()
+//                    self?.deleteDatabasse()
                     abort()
                 }
             })

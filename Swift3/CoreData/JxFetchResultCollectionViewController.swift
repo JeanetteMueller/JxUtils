@@ -53,11 +53,14 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.collectionView?.alwaysBounceVertical = true
+        
         // Uncomment the following line to preserve selection between presentations
         self.clearsSelectionOnViewWillAppear = true
         
         if self.refetchData(){
             self.collectionView?.reloadData()
+            firstTimeOpened = true
         }
     }
     
@@ -76,12 +79,35 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         firstTimeOpened = false
-        self.collectionView?.scrollsToTop = true
+        
+        #if os(OSX)
+            // compiles for OS X
+            self.collectionView?.scrollsToTop = true
+        #elseif os(iOS)
+            // compiles for iOS
+            self.collectionView?.scrollsToTop = true
+        #elseif os(tvOS)
+            // compiles for TV OS
+        #elseif os(watchOS)
+            // compiles for Apple watch
+        #endif
+        
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         
-        self.collectionView?.scrollsToTop = false
+        #if os(OSX)
+            // compiles for OS X
+            self.collectionView?.scrollsToTop = false
+        #elseif os(iOS)
+            // compiles for iOS
+            self.collectionView?.scrollsToTop = false
+        #elseif os(tvOS)
+            // compiles for TV OS
+        #elseif os(watchOS)
+            // compiles for Apple watch
+        #endif
         
         _fetchedResultsController.delegate = nil
         
@@ -141,6 +167,11 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         print("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
     
+    func updateCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
+        
+       print("time to override this method ->", "func updateCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath)")
+    }
+    
     func unloadCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
         print("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
@@ -181,20 +212,24 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         let resultController = self.fetchedResultsController
         
         if self.predicates.count > 0 {
-            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: self.predicates)
+            resultController.fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: self.predicates)
+        }else{
+            resultController.fetchRequest.predicate = nil
         }
         if let search = self.searchPredicate{
             
             var filteredPredicates = self.predicates
             filteredPredicates.append(search)
             
-            resultController.fetchRequest.predicate = NSCompoundPredicate.init(andPredicateWithSubpredicates: filteredPredicates)
+            resultController.fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: filteredPredicates)
         }
         if self.sortDescriptors.count > 0 {
             resultController.fetchRequest.sortDescriptors = sortDescriptors;
+        }else{
+            resultController.fetchRequest.sortDescriptors = nil
         }
         
-        
+        resultController.fetchRequest.fetchLimit = 0
         if self.fetchLimit > 0 {
             resultController.fetchRequest.fetchLimit = self.fetchLimit
         }
@@ -210,16 +245,13 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     }
     
     func object(at indexPath: IndexPath) -> NSManagedObject?{
-        if let sections = self.fetchedResultsController.sections{
         
-            if sections.count > indexPath.section {
-                
-                let sectionInfo = sections[indexPath.section] as NSFetchedResultsSectionInfo
-                    
-                if sectionInfo.numberOfObjects > indexPath.row {
-                    return self.fetchedResultsController.object(at: indexPath)
-                }
-                
+        if let sections = self.fetchedResultsController.sections, sections.count > indexPath.section {
+            
+            let sectionInfo = sections[indexPath.section]
+            
+            if sectionInfo.numberOfObjects > indexPath.row {
+                return self.fetchedResultsController.object(at: indexPath)
             }
         }
         return nil
@@ -231,6 +263,13 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     func allObjects() -> [NSManagedObject] {
         if let all = self.fetchedResultsController.fetchedObjects{
             return all
+        }
+        return [NSManagedObject]()
+    }
+    func allObjects(for section:Int) -> [NSManagedObject] {
+        
+        if let sectionObjects = self.fetchedResultsController.sections?[section].objects{
+            return sectionObjects as! [NSManagedObject]
         }
         return [NSManagedObject]()
     }
@@ -253,7 +292,9 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     }
     
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
+        
+        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
+            
             
             if type == NSFetchedResultsChangeType.insert {
                 print("Insert Section: \(sectionIndex)")
@@ -261,7 +302,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.insertSections(IndexSet.init(integer: sectionIndex))
+                            this.collectionView!.insertSections(IndexSet(integer: sectionIndex))
                         }
                     })
                 )
@@ -271,7 +312,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.reloadSections(IndexSet.init(integer: sectionIndex))
+                            this.collectionView!.reloadSections(IndexSet(integer: sectionIndex))
                         }
                     })
                 )
@@ -279,15 +320,13 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
             else if type == NSFetchedResultsChangeType.delete {
                 print("Delete Section: \(sectionIndex)")
                 
-                if let numberOfSections = collectionView?.numberOfSections, numberOfSections > 1{
-                    blockOperations.append(
-                        BlockOperation(block: { [weak self] in
-                            if let this = self {
-                                this.collectionView!.deleteSections(IndexSet.init(integer: sectionIndex))
-                            }
-                        })
-                    )
-                }
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.deleteSections(IndexSet(integer: sectionIndex))
+                        }
+                    })
+                )
             }
         }
     }
@@ -295,8 +334,8 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     internal func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! ))  && self.dynamicUpdate == true{
             
+            
             if type == NSFetchedResultsChangeType.insert {
-                print("Insert Object: ", newIndexPath as Any)
                 
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
@@ -305,9 +344,17 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                         }
                     })
                 )
-            }
-            else if type == NSFetchedResultsChangeType.update {
-                print("Update Object: ", newIndexPath as Any)
+            }else if type == NSFetchedResultsChangeType.delete {
+                
+                blockOperations.append(
+                    BlockOperation(block: { [weak self] in
+                        if let this = self {
+                            this.collectionView!.deleteItems(at: [indexPath!])
+                            
+                        }
+                    })
+                )
+            }else if type == NSFetchedResultsChangeType.update {
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -315,29 +362,21 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                         }
                     })
                 )
-            }
-            else if type == NSFetchedResultsChangeType.move {
-                print("Move Object: ", newIndexPath as Any)
+            }else if type == NSFetchedResultsChangeType.move {
                 
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
+                            if let cell = this.collectionView!.cellForItem(at: indexPath!){
+                                
+                                this.updateCell(cell, atIndexPath: indexPath!)
+                            }
                             this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
                         }
                     })
                 )
             }
-            else if type == NSFetchedResultsChangeType.delete {
-                print("Delete Object: ", newIndexPath as Any)
-                
-                blockOperations.append(
-                    BlockOperation(block: { [weak self] in
-                        if let this = self {
-                            this.collectionView!.deleteItems(at: [indexPath!])
-                        }
-                    })
-                )
-            }
+            
         }
     }
     
@@ -345,11 +384,19 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )  ) && self.dynamicUpdate == true{
             
             collectionView!.performBatchUpdates({ () -> Void in
-                for operation: BlockOperation in self.blockOperations {
-                    operation.start()
+                
+                while self.blockOperations.count > 0{
+                    
+                    if let op = self.blockOperations.first{
+                    
+                        self.blockOperations.remove(at: 0)
+                    
+                        op.start()
+                    }
                 }
+            
             }, completion: { (finished) -> Void in
-                self.blockOperations.removeAll(keepingCapacity: false)
+//                self.blockOperations.removeAll(keepingCapacity: false)
             })
             
         }else{
