@@ -10,7 +10,7 @@ import UIKit
 
 extension UIViewController {
     
-    func updateAppearance(){
+    @objc func updateAppearance(){
         print("override this")
     }
 }

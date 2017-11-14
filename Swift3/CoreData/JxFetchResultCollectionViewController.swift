@@ -295,10 +295,8 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
             
-            
             if type == NSFetchedResultsChangeType.insert {
-                print("Insert Section: \(sectionIndex)")
-                
+//                print("Insert Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -308,7 +306,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.update {
-                print("Update Section: \(sectionIndex)")
+//                print("Update Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -318,8 +316,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.delete {
-                print("Delete Section: \(sectionIndex)")
-                
+//                print("Delete Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {

@@ -307,14 +307,14 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             switch(type) {
             case .insert:
                 if let newIndexPath = newIndexPath {
-                    print("insert \(newIndexPath)")
+//                    print("insert \(newIndexPath)")
                     self.tableView?.insertRows(at: [newIndexPath], with: .middle)
                 }
                 break;
                 
             case .delete:
                 if let indexPath = indexPath {
-                    print("delete \(indexPath)")
+//                    print("delete \(indexPath)")
                     let cell = self.tableView?.cellForRow(at: indexPath)
                     
                     NotificationCenter.default.removeObserver(cell as Any)
@@ -325,7 +325,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 
             case .update:
                 if let indexPath = indexPath {
-                    print("update \(indexPath)")
+//                    print("update \(indexPath)")
                     if let cell = self.tableView?.cellForRow(at: (indexPath)) {
                         
 //                        NotificationCenter.default.removeObserver(cell)
@@ -341,6 +341,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 
             case .move:
                 if let deleteIndexPath = indexPath, let insertIndexPath = newIndexPath {
+//                    print("move \(indexPath)")
                     self.tableView?.moveRow(at: deleteIndexPath, to: insertIndexPath)
                 }
 //                if let deleteIndexPath = indexPath {

@@ -64,7 +64,7 @@ class JxCoreDataStore:NSObject {
     func setupNotifications(){
         NotificationCenter.default.addObserver(self, selector:#selector(self.contextDidSave), name:NSNotification.Name.NSManagedObjectContextDidSave, object:nil)
     }
-    func contextDidSave(_ notification:Notification){
+    @objc func contextDidSave(_ notification:Notification){
         self.mainManagedObjectContext.perform {
             self.mainManagedObjectContext.mergeChanges(fromContextDidSave: notification)
         }
@@ -174,7 +174,7 @@ class JxCoreDataStore:NSObject {
     // MARK: iOS 10 Funktionen
     
     @available(iOS 10.0, *)
-    private lazy var persistentContainer: NSPersistentContainer = {
+    lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: self.name)
         
         if let url = self.storeURL(){

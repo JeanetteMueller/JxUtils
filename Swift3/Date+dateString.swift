@@ -26,8 +26,6 @@ extension Date {
         
         formatter.dateFormat = "MMMM yyyy"
         
-
-        
         let formattedDateString = formatter.string(from: self)
         
         //NSLog(@"formattedDateString for locale %@: %@", [[formatter locale] localeIdentifier], formattedDateString);
@@ -45,8 +43,6 @@ extension NSDate {
         let formatter = SharedDateFormatter.sharedDateFormatter
         
         formatter.dateFormat = "MMMM yyyy"
-        
-        
         
         let formattedDateString = formatter.string(from: self as Date)
         

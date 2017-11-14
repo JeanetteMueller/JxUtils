@@ -21,12 +21,12 @@ extension UIColor{
             cString.remove(at: cString.startIndex)
         }
         
-        if (cString.characters.count != 6 && cString.characters.count != 8) {
+        if (cString.count != 6 && cString.count != 8) {
             return UIColor.red
         }
         
 
-        if cString.characters.count == 6{
+        if cString.count == 6{
             cString.append("FF")
         }
         
