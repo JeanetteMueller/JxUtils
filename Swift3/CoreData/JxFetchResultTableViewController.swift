@@ -263,8 +263,8 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     func allObjects(for section:Int) -> [NSManagedObject] {
         
-        if let sectionObjects = self.fetchedResultsController.sections?[section].objects{
-            return sectionObjects as! [NSManagedObject]
+        if let sectionObjects = self.fetchedResultsController.sections?[section].objects as? [NSManagedObject]{
+            return sectionObjects
         }
         return [NSManagedObject]()
     }

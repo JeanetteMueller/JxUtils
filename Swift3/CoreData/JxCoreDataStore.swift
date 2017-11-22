@@ -12,7 +12,6 @@ import CoreData
 
 class JxCoreDataStore:NSObject {
     
-    let useNewFunctions: Bool = true
     let name:String
     let groupIdentifier:String
     let directory:URL?
@@ -25,7 +24,7 @@ class JxCoreDataStore:NSObject {
         
         super.init()
         
-        if #available(iOS 10.0, *), useNewFunctions == true {
+        if #available(iOS 10.0, *){
             
         }else{
             self.setupNotifications()
@@ -33,7 +32,7 @@ class JxCoreDataStore:NSObject {
     }
 
     func managedObjectID(forURIRepresentation uri: URL) -> NSManagedObjectID?{
-        if #available(iOS 10.0, *), useNewFunctions == true {
+        if #available(iOS 10.0, *) {
             return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
         }
         
@@ -98,7 +97,7 @@ class JxCoreDataStore:NSObject {
         return nil
     }
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
-        if #available(iOS 10.0, *), self.useNewFunctions == true {
+        if #available(iOS 10.0, *){
             self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
             return self.persistentContainer.viewContext
         }
@@ -109,7 +108,7 @@ class JxCoreDataStore:NSObject {
     }()
     
     func newPrivateContext() -> NSManagedObjectContext {
-        if #available(iOS 10.0, *), useNewFunctions == true {
+        if #available(iOS 10.0, *) {
             let context = self.persistentContainer.newBackgroundContext()
             context.automaticallyMergesChangesFromParent = true
             return context
@@ -126,7 +125,7 @@ class JxCoreDataStore:NSObject {
         }
     }
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
-        if #available(iOS 10.0, *), useNewFunctions == true {
+        if #available(iOS 10.0, *){
             self.persistentContainer.performBackgroundTask(block)
         }else{
             
@@ -162,7 +161,7 @@ class JxCoreDataStore:NSObject {
         
         let metaData = storeCoordinator.metadata(for: storeCoordinator.persistentStores.first!)
         
-        return metaData[NSStoreUUIDKey] as! String
+        return metaData[NSStoreUUIDKey] as? String ?? "UNKNOWN_STORE_UUID"
     }
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String) -> String{
         return String(format: "x-coredata://%@/%@/%@", self.getStoreUUID() as CVarArg, entityName, idString)
@@ -185,11 +184,16 @@ class JxCoreDataStore:NSObject {
             
             container.persistentStoreDescriptions = [description]
             
-            container.loadPersistentStores(completionHandler: { [weak self](storeDescription, error) in
+            container.loadPersistentStores(completionHandler: { (description, error) in
                 if let error = error {
                     print("CoreData error", error, error._userInfo as Any)
                     
-//                    self?.deleteDatabasse()
+                    let defaults = UserDefaults.standard
+                    defaults.set(error.localizedDescription, forKey: "CoreDataError")
+                    defaults.synchronize()
+                    
+                    self.deleteDatabasse()
+                    
                     abort()
                 }
             })
