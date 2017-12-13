@@ -115,14 +115,15 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sections = self.fetchedResultsController.sections
-        var count = 0;
-        
-        if (sections?.count)! > section {
+        var count = 0
+        if let sections = self.fetchedResultsController.sections{
             
-            let sectionInfo = sections?[section]
-            
-            count = (sectionInfo?.numberOfObjects)!
+            if sections.count > section {
+                
+                let sectionInfo = sections[section]
+                
+                count = sectionInfo.numberOfObjects
+            }
         }
         return count
     }

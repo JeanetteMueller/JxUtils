@@ -63,7 +63,7 @@ extension UIView {
             }
         }
         
-        if (animate) {
+        if animate {
             
             self.clipsToBounds = false
             
@@ -75,7 +75,7 @@ extension UIView {
                 self.layer.shadowOffset = CGSize.zero
                 self.layer.shadowOpacity = 1.0
                 
-                let anim = CABasicAnimation.init(keyPath: "shadowRadius")
+                let anim = CABasicAnimation(keyPath: "shadowRadius")
                 anim.fromValue = 0.0
                 anim.toValue = 8.0
                 anim.duration = (duration * 0.82) / 2

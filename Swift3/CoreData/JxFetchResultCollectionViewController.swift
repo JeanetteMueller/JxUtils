@@ -52,7 +52,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.collectionView?.alwaysBounceVertical = true
         
         // Uncomment the following line to preserve selection between presentations

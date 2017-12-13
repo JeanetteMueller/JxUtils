@@ -190,6 +190,7 @@ class JxCoreDataStore:NSObject {
                     
                     let defaults = UserDefaults.standard
                     defaults.set(error.localizedDescription, forKey: "CoreDataError")
+                    defaults.set(nil, forKey: "firstStart")
                     defaults.synchronize()
                     
                     self.deleteDatabasse()

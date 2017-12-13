@@ -36,4 +36,27 @@ extension String {
         return "conversino failed"
         
     }
+    
+    //swift 4
+//    var htmlDecoded: String {
+//        let decoded = try? NSAttributedString(data: Data(utf8), options: [
+//            .documentType: NSAttributedString.DocumentType.html,
+//            .characterEncoding: String.Encoding.utf8.rawValue
+//            ], documentAttributes: nil).string
+//
+//        return decoded ?? self
+//    }
+    
+    var htmlDecoded: String? {
+        
+        if let encodedData = self.data(using: String.Encoding.utf8){
+            let attributedOptions = [ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+                                      NSCharacterEncodingDocumentAttribute: String.Encoding.utf8.rawValue] as [String : Any]
+            
+            if let attributedString = try? NSAttributedString(data: encodedData, options: attributedOptions, documentAttributes: nil){
+                return attributedString.string
+            }
+        }
+        return self
+    }
 }

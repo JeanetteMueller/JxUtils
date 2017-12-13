@@ -14,12 +14,12 @@ extension UILabel {
         
         guard let attributedText = attributedText else { return nil }
         
-        let textStorage = NSTextStorage.init(attributedString: attributedText)
+        let textStorage = NSTextStorage(attributedString: attributedText)
         
-        let layoutManager = NSLayoutManager.init()
+        let layoutManager = NSLayoutManager()
         textStorage.addLayoutManager(layoutManager)
         
-        let textContainer = NSTextContainer.init(size:self.bounds.size)
+        let textContainer = NSTextContainer(size:self.bounds.size)
         textContainer.lineFragmentPadding = 0;
         layoutManager.addTextContainer(textContainer)
         

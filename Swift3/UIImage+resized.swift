@@ -128,7 +128,7 @@ extension UIImage {
                     if cache {
                         UIImageCache.shared.setObject(saveImage, forKey: newFilename as NSString)
                     }
-                    let url = URL.init(fileURLWithPath: newFilename)
+                    let url = URL(fileURLWithPath: newFilename)
                     
                     if url.skipBackupAttributeToItemAtURL(true){
                         //print("downloaded file is excluded from backup")
