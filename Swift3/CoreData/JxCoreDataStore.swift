@@ -126,7 +126,13 @@ class JxCoreDataStore:NSObject {
     }
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         if #available(iOS 10.0, *){
-            self.persistentContainer.performBackgroundTask(block)
+            //self.persistentContainer.performBackgroundTask(block)
+            
+            self.persistentContainer.performBackgroundTask({ (context) in
+                context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+                
+                block(context)
+            })
         }else{
             
             let pContext = self.newPrivateContext()

@@ -43,10 +43,7 @@ extension UIImage {
         var useSize:CGSize
         
         if var mySize = size {
-            
-            
-            
-            
+
             if mySize.width < 50 || mySize.height < 50 {
                 
                 mySize = CGSize(width: 50, height: 50)
@@ -147,13 +144,42 @@ extension UIImage {
 //        print("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
-        original.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        UIRectFill(CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
+        
+        original.draw(in: CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
         
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext()
         
         return newImage
+    }
+    
+    func getQuadratImage(andCropToBounds crop: Bool = true) -> UIImage {
+        
+        let image = self
+        var quadratSize = CGSize(width: 100, height: 100)
+        
+        if crop {
+            quadratSize = CGSize(width: min(image.size.width, image.size.height), height: min(image.size.width, image.size.height))
+        } else {
+            quadratSize = CGSize(width: max(image.size.width, image.size.height), height: max(image.size.width, image.size.height))
+        }
+        
+        UIGraphicsBeginImageContextWithOptions(quadratSize, false, 0.0)
+        
+        image.draw(in: CGRect(x: (quadratSize.width - image.size.width) / 2,
+                              y: (quadratSize.height - image.size.height) / 2,
+                              width: image.size.width,
+                              height: image.size.height))
+        
+        if let newImage = UIGraphicsGetImageFromCurrentImageContext() {
+            UIGraphicsEndImageContext()
+            return newImage
+        } else {
+            UIGraphicsEndImageContext()
+            return image
+        }
     }
 }
 
