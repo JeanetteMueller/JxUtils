@@ -20,7 +20,7 @@ class SharedDateFormatter {
 
 extension Date {
     
-    func dateString() -> String{
+    func dateFormatedForHeadline() -> String{
         
         let formatter = SharedDateFormatter.sharedDateFormatter
         
@@ -28,27 +28,19 @@ extension Date {
         
         let formattedDateString = formatter.string(from: self)
         
-        //NSLog(@"formattedDateString for locale %@: %@", [[formatter locale] localeIdentifier], formattedDateString);
-        
-        //NSLog(@"formattedDateString: %@", formattedDateString);
-        
         return formattedDateString
     }
 }
 
 extension NSDate {
     
-    func dateString() -> String{
+    func dateFormatedForHeadline() -> String{
         
         let formatter = SharedDateFormatter.sharedDateFormatter
         
         formatter.dateFormat = "MMMM yyyy"
         
         let formattedDateString = formatter.string(from: self as Date)
-        
-        //NSLog(@"formattedDateString for locale %@: %@", [[formatter locale] localeIdentifier], formattedDateString);
-        
-        //NSLog(@"formattedDateString: %@", formattedDateString);
         
         return formattedDateString
     }

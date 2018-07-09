@@ -10,12 +10,17 @@ import UIKit
 
 extension UIView {
     
-    func renderAsImage() -> UIImage?{
+    func renderAsImage(fullScale scale: Bool = true) -> UIImage?{
         
         let imageSize = self.bounds.size
         
         // Create a graphics context with the target size
-        UIGraphicsBeginImageContextWithOptions(imageSize, true, 0.0)
+        if scale{
+            UIGraphicsBeginImageContextWithOptions(imageSize, true, 0.0)
+        }else{
+            UIGraphicsBeginImageContext(imageSize)
+        }
+        
         
         if let context = UIGraphicsGetCurrentContext() {
             // Render the view into the current graphics context

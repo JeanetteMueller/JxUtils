@@ -124,6 +124,7 @@ class JxCoreDataStore:NSObject {
             block(self.mainManagedObjectContext)
         }
     }
+    
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         if #available(iOS 10.0, *){
             //self.persistentContainer.performBackgroundTask(block)
@@ -157,11 +158,13 @@ class JxCoreDataStore:NSObject {
         
         return URL(string: urlString)
     }
+    
     func getURIPrepresentation(forID idString: String, andEntityName entityName: String, andStoreUUID uuid: String) -> URL?{
         let urlString = self.getStringPrepresentation(forID: idString, andEntityName:entityName, andStoreUUID: uuid)
         
         return URL(string: urlString)
     }
+    
     func getStoreUUID() -> String{
         let storeCoordinator = self.persistentStoreCoordinator
         
@@ -169,9 +172,11 @@ class JxCoreDataStore:NSObject {
         
         return metaData[NSStoreUUIDKey] as? String ?? "UNKNOWN_STORE_UUID"
     }
+    
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String) -> String{
         return String(format: "x-coredata://%@/%@/%@", self.getStoreUUID() as CVarArg, entityName, idString)
     }
+    
     func getStringPrepresentation(forID idString: String, andEntityName entityName: String, andStoreUUID uuid: String) -> String{
         return String(format: "x-coredata://%@/%@/%@", uuid, entityName, idString)
     }

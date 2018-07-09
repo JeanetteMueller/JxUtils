@@ -35,9 +35,14 @@ extension UIImage {
     }
     class func getImage(withImageString imageString:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
         
+        if let i = UIImage(named: imageString){
+            return i
+        }
+        
         let imagePath = UIImage.getFilePath(withUrlString: imageString)
         
         return UIImage.getImage(withImagePath: imagePath, andSize: size, useCache: cache)
+
     }
     class func getImage(withImagePath imagePath:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
         var useSize:CGSize
