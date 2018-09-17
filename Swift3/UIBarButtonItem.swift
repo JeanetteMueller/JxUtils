@@ -6,4 +6,27 @@
 //  Copyright © 2018 Jeanette Müller. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+extension UIBarButtonItem {
+    
+    var frame: CGRect? {
+        
+        guard let view = self.value(forKey: "view") as? UIView else {
+            return nil
+        }
+        
+        if let delegate = UIApplication.shared.delegate as? AppDelegate{
+            if let base = delegate.window?.rootViewController{
+                
+                if let result = view.superview?.convert(view.frame, to: base.view){
+                
+                    return result
+                }
+            }
+        }
+        
+        return view.frame
+    }
+    
+}

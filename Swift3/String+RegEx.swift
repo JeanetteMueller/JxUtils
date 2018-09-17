@@ -41,6 +41,9 @@ extension String {
                                             upper: min(length, max(0, r.upperBound))))
         let start = index(startIndex, offsetBy: range.lowerBound)
         let end = index(start, offsetBy: range.upperBound - range.lowerBound)
-        return String(self[Range(start ..< end)])
+        
+        let stringRange: Range<String.Index> = start..<end
+        
+        return String(self[stringRange])
     }
 }
