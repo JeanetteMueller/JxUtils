@@ -23,20 +23,11 @@ class JxCoreDataStore:NSObject {
         self.directory = directory
         
         super.init()
-        
-        if #available(iOS 10.0, *){
-            
-        }else{
-            self.setupNotifications()
-        }
     }
 
     func managedObjectID(forURIRepresentation uri: URL) -> NSManagedObjectID?{
-        if #available(iOS 10.0, *) {
-            return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
-        }
         
-        return self.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+        return self.persistentContainer.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {
@@ -97,25 +88,15 @@ class JxCoreDataStore:NSObject {
         return nil
     }
     lazy var mainManagedObjectContext: NSManagedObjectContext = {
-        if #available(iOS 10.0, *){
-            self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-            return self.persistentContainer.viewContext
-        }
-        var context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        context.persistentStoreCoordinator = self.persistentStoreCoordinator
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        return context
+        
+        self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+        return self.persistentContainer.viewContext
+        
     }()
     
     func newPrivateContext() -> NSManagedObjectContext {
-        if #available(iOS 10.0, *) {
-            let context = self.persistentContainer.newBackgroundContext()
-            context.automaticallyMergesChangesFromParent = true
-            return context
-        }
-        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        context.persistentStoreCoordinator = self.persistentStoreCoordinator
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        let context = self.persistentContainer.newBackgroundContext()
+        context.automaticallyMergesChangesFromParent = true
         return context
     }
     
@@ -126,7 +107,7 @@ class JxCoreDataStore:NSObject {
     }
     
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
-        if #available(iOS 10.0, *){
+        
             //self.persistentContainer.performBackgroundTask(block)
             
             self.persistentContainer.performBackgroundTask({ (context) in
@@ -134,13 +115,6 @@ class JxCoreDataStore:NSObject {
                 
                 block(context)
             })
-        }else{
-            
-            let pContext = self.newPrivateContext()
-            pContext.perform {
-                block(pContext)
-            }
-        }
     }
     
     func deleteDatabasse(){
@@ -181,9 +155,6 @@ class JxCoreDataStore:NSObject {
         return String(format: "x-coredata://%@/%@/%@", uuid, entityName, idString)
     }
     
-    // MARK: iOS 10 Funktionen
-    
-    @available(iOS 10.0, *)
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: self.name)
         
