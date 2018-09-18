@@ -123,7 +123,7 @@ extension UIImage {
                 let newImage = UIImage.createImage(fromOriginal: original, withSize: size)
                 
                 if let saveImage = newImage {
-                    let imageData = UIImagePNGRepresentation(saveImage)! as NSData
+                    let imageData = saveImage.pngData()! as NSData
                     
                     imageData.write(toFile: newFilename as String, atomically: true)
                     

@@ -24,16 +24,26 @@ extension String {
         return self.count
     }
     
-    subscript (i: Int) -> String {
-        return self[Range(i ..< i + 1)]
+    subscript(_ i: Int) -> String {
+        let idx1 = index(startIndex, offsetBy: i)
+        let idx2 = index(idx1, offsetBy: 1)
+        return String(self[idx1..<idx2])
     }
     
     func substring(from: Int) -> String {
-        return self[Range(min(from, length) ..< length)]
+        
+        let idx1 = min(from, length)
+        let idx2 = length
+        
+        return String(self[idx1..<idx2])
     }
     
     func substring(to: Int) -> String {
-        return self[Range(0 ..< max(0, to))]
+        
+        let idx1 = 0
+        let idx2 = max(0, to)
+        
+        return String(self[idx1 ..< idx2])
     }
     
     subscript (r: Range<Int>) -> String {

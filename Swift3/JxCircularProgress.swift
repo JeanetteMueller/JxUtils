@@ -113,7 +113,7 @@ class JxCircularProgress: UIView {
                                                       endAngle:radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
                                                       clockwise:true).cgPath
                 
-                dotAnimation.calculationMode = kCAAnimationPaced;
+                dotAnimation.calculationMode = CAAnimationCalculationMode.paced;
                 dotAnimation.isRemovedOnCompletion = false
                 dot?.fillColor = circleColor.cgColor;
                 dot?.add(dotAnimation, forKey: "position")
@@ -148,7 +148,7 @@ class JxCircularProgress: UIView {
                                                    startAngle:radiantFrom(startDegree),
                                                    endAngle:radiantFrom(( 360.0 / 100.0 * CGFloat(percent)  ) + startDegree),
                                                    clockwise:true).cgPath;
-            textAnimation.calculationMode = kCAAnimationPaced
+            textAnimation.calculationMode = CAAnimationCalculationMode.paced
             textAnimation.isRemovedOnCompletion = false
             self.textLabel.layer.add(textAnimation, forKey: "position")
             
@@ -212,7 +212,7 @@ class JxCircularProgress: UIView {
         }
         if circle == nil {
             let circle = CAShapeLayer()
-            circle.lineCap = "round"
+            circle.lineCap = CAShapeLayerLineCap(rawValue: "round")
             circle.fillColor = nil;
             
             self.circle = circle

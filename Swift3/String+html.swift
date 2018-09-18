@@ -371,9 +371,18 @@ extension String {
         func decode(_ entity : String) -> Character? {
             
             if entity.hasPrefix("&#x") || entity.hasPrefix("&#X"){
-                return decodeNumeric(entity.substring(with: entity.index(entity.startIndex, offsetBy: 3) ..< entity.index(entity.endIndex, offsetBy: -1)), base: 16)
+                var result = entity.substring(from: 3)
+                if result.length > 1 {
+                    result = result.substring(to: result.length-1)
+                }
+                return decodeNumeric(result, base: 16)
+                
             } else if entity.hasPrefix("&#") {
-                return decodeNumeric(entity.substring(with: entity.index(entity.startIndex, offsetBy: 2) ..< entity.index(entity.endIndex, offsetBy: -1)), base: 10)
+                var result = entity.substring(from: 2)
+                if result.length > 1 {
+                    result = result.substring(to: result.length-1)
+                }
+                return decodeNumeric(result, base: 10)
             } else {
                 return characterEntities[entity]
             }

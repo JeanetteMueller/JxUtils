@@ -48,7 +48,7 @@ public class ForceTouchGestureRecognizer: UIGestureRecognizer, UIGestureRecogniz
         normalizeForceAndFireEvent(.cancelled, touches: touches)
     }
     
-    private func normalizeForceAndFireEvent(_ state: UIGestureRecognizerState, touches: Set<UITouch>) {
+    private func normalizeForceAndFireEvent(_ state: UIGestureRecognizer.State, touches: Set<UITouch>) {
         //Putting a guard statement here to make sure we don't fire off our target's selector event if a touch doesn't exist to begin with.
         guard let firstTouch = touches.first else { return }
         
