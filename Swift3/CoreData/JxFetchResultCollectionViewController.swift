@@ -300,7 +300,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.insertSections(IndexSet(integer: sectionIndex))
+                            this.collectionView?.insertSections(IndexSet(integer: sectionIndex))
                         }
                     })
                 )
@@ -310,7 +310,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.reloadSections(IndexSet(integer: sectionIndex))
+                            this.collectionView?.reloadSections(IndexSet(integer: sectionIndex))
                         }
                     })
                 )
@@ -320,7 +320,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.deleteSections(IndexSet(integer: sectionIndex))
+                            this.collectionView?.deleteSections(IndexSet(integer: sectionIndex))
                         }
                     })
                 )
@@ -337,7 +337,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.insertItems(at: [newIndexPath!])
+                            this.collectionView?.insertItems(at: [newIndexPath!])
                         }
                     })
                 )
@@ -346,7 +346,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.deleteItems(at: [indexPath!])
+                            this.collectionView?.deleteItems(at: [indexPath!])
                             
                         }
                     })
@@ -355,7 +355,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            this.collectionView!.reloadItems(at: [indexPath!])
+                            this.collectionView?.reloadItems(at: [indexPath!])
                         }
                     })
                 )
@@ -364,11 +364,11 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
-                            if let cell = this.collectionView!.cellForItem(at: indexPath!){
+                            if let cell = this.collectionView?.cellForItem(at: indexPath!){
                                 
                                 this.updateCell(cell, atIndexPath: indexPath!)
                             }
-                            this.collectionView!.moveItem(at: indexPath!, to: newIndexPath!)
+                            this.collectionView?.moveItem(at: indexPath!, to: newIndexPath!)
                         }
                     })
                 )
@@ -380,7 +380,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     internal func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )  ) && self.dynamicUpdate == true{
             
-            collectionView!.performBatchUpdates({ () -> Void in
+            collectionView?.performBatchUpdates({ () -> Void in
                 
                 while self.blockOperations.count > 0{
                     

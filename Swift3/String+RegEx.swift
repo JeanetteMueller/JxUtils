@@ -30,7 +30,7 @@ extension String {
         return String(self[idx1..<idx2])
     }
     
-    func substring(from: Int) -> String {
+    func subString(from: Int) -> String {
         
         let idx1 = min(from, length)
         let idx2 = length
@@ -38,7 +38,7 @@ extension String {
         return String(self[idx1..<idx2])
     }
     
-    func substring(to: Int) -> String {
+    func subString(to: Int) -> String {
         
         let idx1 = 0
         let idx2 = max(0, to)

@@ -16,15 +16,15 @@ extension UIView {
         
         // Create a graphics context with the target size
         if scale{
-            UIGraphicsBeginImageContextWithOptions(imageSize, true, 0.0)
+            UIGraphicsBeginImageContextWithOptions(imageSize, false, UIScreen.main.scale)
         }else{
             UIGraphicsBeginImageContext(imageSize)
         }
         
         
-        if let context = UIGraphicsGetCurrentContext() {
+        if UIGraphicsGetCurrentContext() != nil {
             // Render the view into the current graphics context
-            self.layer.render(in: context)
+            self.drawHierarchy(in: self.bounds, afterScreenUpdates: false)
             
             // Create an image from the current graphics context
             let image = UIGraphicsGetImageFromCurrentImageContext()

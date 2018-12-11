@@ -168,7 +168,8 @@ class JxCoreDataStore:NSObject {
             
             container.loadPersistentStores(completionHandler: { (description, error) in
                 if let error = error {
-                    print("CoreData error", error, error._userInfo as Any)
+                    let e = error as NSError
+                    print("CoreData error", error, e.userInfo as Any)
                     
                     let defaults = UserDefaults.standard
                     defaults.set(error.localizedDescription, forKey: "CoreDataError")

@@ -109,7 +109,6 @@ extension UIImage {
                             let allReadyResizedVersionPath = path.appending("_").appendingFormat("%d", x).appending("-").appendingFormat("%d", x).appending(".").appending(ext)
                             
                             if FileManager.default.fileExists(atPath: allReadyResizedVersionPath) {
-                                print("verwende als original eine bereits verkleinerte version um speicher zu schonen", newFilename)
                                 originalImagePath = allReadyResizedVersionPath
                                 break
                             }
@@ -120,13 +119,13 @@ extension UIImage {
             
             if let original = UIImage(contentsOfFile: originalImagePath){
                 
-                let newImage = UIImage.createImage(fromOriginal: original, withSize: size)
-                
-                if let saveImage = newImage {
-                    let imageData = saveImage.pngData()! as NSData
+                if let saveImage = UIImage.createImage(fromOriginal: original, withSize: size) {
                     
-                    imageData.write(toFile: newFilename as String, atomically: true)
+                    if let imageData = saveImage.pngData() as NSData?{
                     
+                        imageData.write(toFile: newFilename as String, atomically: true)
+                    
+                    }
                     if cache {
                         UIImageCache.shared.setObject(saveImage, forKey: newFilename as NSString)
                     }
