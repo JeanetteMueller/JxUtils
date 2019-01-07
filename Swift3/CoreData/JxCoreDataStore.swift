@@ -46,7 +46,7 @@ class JxCoreDataStore:NSObject {
             
             try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: options)
         } catch let  error as NSError {
-            print("Ops there was an error \(error.localizedDescription)")
+            log("Ops there was an error \(error.localizedDescription)")
             abort()
         }
         return coordinator
@@ -122,7 +122,7 @@ class JxCoreDataStore:NSObject {
             do {
                 try FileManager.default.removeItem(atPath: url.path)
             } catch let error as NSError {
-                print(error)
+                log(error)
             }
         }
     }
@@ -169,7 +169,7 @@ class JxCoreDataStore:NSObject {
             container.loadPersistentStores(completionHandler: { (description, error) in
                 if let error = error {
                     let e = error as NSError
-                    print("CoreData error", error, e.userInfo as Any)
+                    log("CoreData error", error, e.userInfo as Any)
                     
                     let defaults = UserDefaults.standard
                     defaults.set(error.localizedDescription, forKey: "CoreDataError")

@@ -92,7 +92,7 @@ extension UIImage {
             let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height)).appending(".").appending(ext)
             
             if FileManager.default.fileExists(atPath: newFilename) {
-                //print("resized file exitiert schon", newFilename)
+                //log("resized file exitiert schon", newFilename)
                 return newFilename
             }
             
@@ -102,9 +102,9 @@ extension UIImage {
                 //quadrat
                 if size.width < 1000{
                     
-                    for x in [1000, 800, 600, 500, 400, 300, 240, 220, 200, 180, 160, 150, 140, 120, 110, 100, 80]{
+                    for x in [1000, 800, 600, 500, 400, 300, 240, 220, 200, 180, 160, 150, 140, 120, 110, 100, 80, 70, 60]{
                         
-//                        print("imagesize with width", x)
+//                        log("imagesize with width", x)
                         if size.width < CGFloat(x){
                             let allReadyResizedVersionPath = path.appending("_").appendingFormat("%d", x).appending("-").appendingFormat("%d", x).appending(".").appending(ext)
                             
@@ -123,6 +123,10 @@ extension UIImage {
                     
                     if let imageData = saveImage.pngData() as NSData?{
                     
+                        if FileManager.default.fileExists(atPath: newFilename) {
+                            //log("resized file exitiert schon", newFilename)
+                            try? FileManager.default.removeItem(atPath: newFilename)
+                        }
                         imageData.write(toFile: newFilename as String, atomically: true)
                     
                     }
@@ -132,9 +136,9 @@ extension UIImage {
                     let url = URL(fileURLWithPath: newFilename)
                     
                     if url.skipBackupAttributeToItemAtURL(true){
-                        //print("downloaded file is excluded from backup")
+                        //log("downloaded file is excluded from backup")
                     }else{
-                        print("UIImage: pathToResizedImage - exclude from backup failed:", url)
+                        log("UIImage: pathToResizedImage - exclude from backup failed:", url)
                     }
                     
                     return newFilename;
@@ -145,12 +149,25 @@ extension UIImage {
     }
     
     class func createImage(fromOriginal original: UIImage, withSize size:CGSize) -> UIImage?{
-//        print("create resized image")
+//        log("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
         UIRectFill(CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
         
-        original.draw(in: CGRect(x: 0.0, y: 0.0, width: size.width, height: size.height))
+        let ratioX = original.size.width / size.width
+        let ratioY = original.size.height / size.height
+        
+        //max zeigt ganzes bild mit schwarzen balken
+        //min vergrößert das bild und schneidet den rest ab
+        let ratio = min(ratioX, ratioY)
+        
+        let newWidth = original.size.width/ratio
+        let newHeight = original.size.height/ratio
+        
+        original.draw(in: CGRect(x: (size.width - newWidth) / 2,
+                                 y: (size.height - newHeight) / 2,
+                                 width: newWidth,
+                                 height: newHeight))
         
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         

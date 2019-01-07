@@ -39,7 +39,7 @@ extension UIColor{
         
         let alpha = CGFloat(rgbValue & 0x000000FF) / 255.0
         
-        //print("color", hex, red, alpha)
+        //log("color", hex, red, alpha)
         
         return UIColor(
             red: red,

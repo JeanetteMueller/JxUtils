@@ -45,7 +45,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     }
     
     func basicFetchProperties() {
-        print("WARNING: You have to override this method to set cellIdentifier, managedObjectContext, entityName, predicates and sortDescriptors")
+        log("WARNING: You have to override this method to set cellIdentifier, managedObjectContext, entityName, predicates and sortDescriptors")
     }
     
     // MARK: View
@@ -159,22 +159,22 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     
     func configureCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        log("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
     
     func startCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        log("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
     
     func updateCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
-       print("time to override this method ->", "func updateCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath)")
+       log("time to override this method ->", "func updateCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath)")
     }
     
     func unloadCell(_ cell: UICollectionViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
+        log("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
         
         NotificationCenter.default.removeObserver(cell)
     }
@@ -239,7 +239,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
             return true
         } catch {
             let fetchError = error as NSError
-            print("\(fetchError), \(fetchError.userInfo)")
+            log("\(fetchError), \(fetchError.userInfo)")
         }
         return false
     }
@@ -296,7 +296,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))! )) && self.dynamicUpdate == true{
             
             if type == NSFetchedResultsChangeType.insert {
-//                print("Insert Section: \(sectionIndex)")
+//                log("Insert Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -306,7 +306,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.update {
-//                print("Update Section: \(sectionIndex)")
+//                log("Update Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {
@@ -316,7 +316,7 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
                 )
             }
             else if type == NSFetchedResultsChangeType.delete {
-//                print("Delete Section: \(sectionIndex)")
+//                log("Delete Section: \(sectionIndex)")
                 blockOperations.append(
                     BlockOperation(block: { [weak self] in
                         if let this = self {

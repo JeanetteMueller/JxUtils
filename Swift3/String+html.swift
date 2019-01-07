@@ -294,12 +294,11 @@ extension String {
                 return result
 
             } catch let error as NSError {
-                print("ERROR: ", error.localizedDescription)
+                log("ERROR: ", error.localizedDescription)
             }
         }
         
         return "conversino failed"
-        
     }
     
     //swift 4
@@ -315,37 +314,6 @@ extension String {
     var htmlDecoded: String? {
 
         return self.stringByDecodingHTMLEntities
-        /*
-        
-        var string = self
-        
-        if !string.contains("<body"){
-            
-            string = "<!DOCTYPE html><html><body>" + string + "</body></html>"
-            
-        }
-        
-        
-        if let encodedData = string.data(using: String.Encoding.utf8) as Data? {
-            var attributedOptions = [NSAttributedString.DocumentReadingOptionKey : Any]()
-            
-            attributedOptions[NSAttributedString.DocumentReadingOptionKey.documentType] = NSAttributedString.DocumentType.html
-            attributedOptions[NSAttributedString.DocumentReadingOptionKey.characterEncoding] = String.Encoding.utf8.rawValue
-            
-            do {
-                let attributedString = try NSAttributedString(data: encodedData,
-                                                              options: attributedOptions,
-                                                              documentAttributes: nil)
-                return attributedString.string
-
-            } catch let error as NSError {
-                print("ERROR: ", error.localizedDescription)
-
-                return self
-            }
-        }
-        return self
- */
     }
     
     var stringByDecodingHTMLEntities : String {
@@ -371,16 +339,16 @@ extension String {
         func decode(_ entity : String) -> Character? {
             
             if entity.hasPrefix("&#x") || entity.hasPrefix("&#X"){
-                var result = entity.substring(from: 3)
+                var result = entity.subString(from: 3)
                 if result.length > 1 {
-                    result = result.substring(to: result.length-1)
+                    result = result.subString(to: result.length-1)
                 }
                 return decodeNumeric(result, base: 16)
                 
             } else if entity.hasPrefix("&#") {
-                var result = entity.substring(from: 2)
+                var result = entity.subString(from: 2)
                 if result.length > 1 {
-                    result = result.substring(to: result.length-1)
+                    result = result.subString(to: result.length-1)
                 }
                 return decodeNumeric(result, base: 10)
             } else {

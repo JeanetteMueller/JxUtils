@@ -12,8 +12,9 @@ import CoreData
 class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsControllerDelegate{
     
     var cellIdentifier: String = "Cell"
+    var emptyCellIdentifier: String = "Cell"
     
-    private var _fetchedResultsController:NSFetchedResultsController<NSManagedObject>!
+    private var _fetchedResultsController:NSFetchedResultsController<NSManagedObject>?
     var managedObjectContext:NSManagedObjectContext?
     
     var entityName:String?
@@ -29,6 +30,9 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     var firstTimeOpened = true
     
     var dynamicUpdate = true
+    
+    var noDataInfo: String? = nil
+    var minSectionCount: Int = 0
     
     override var canBecomeFirstResponder: Bool {
         return true
@@ -48,7 +52,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     
     func basicFetchProperties() {
-        print("WARNING: You have to override this method to set cellIdentifier, managedObjectContext, entityName, predicates and sortDescriptors")
+        log("WARNING: You have to override this method to set cellIdentifier, managedObjectContext, entityName, predicates and sortDescriptors")
     }
     
     // MARK: View
@@ -59,21 +63,21 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         // Uncomment the following line to preserve selection between presentations
         self.clearsSelectionOnViewWillAppear = true
         
-        if self.refetchData(){
-            self.tableView?.reloadData()
-        }
+ 
     }
-    
+    func refreshHeader() {
+        
+    }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        _fetchedResultsController.delegate = self
+        self._fetchedResultsController?.delegate = self
         
-        if firstTimeOpened == false{
+        //if firstTimeOpened == false{
             if self.refetchData() {
                 self.tableView.reloadData()
             }
-        }
+        //}
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -97,7 +101,7 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         self.tableView?.scrollsToTop = false
         #endif
         
-        _fetchedResultsController.delegate = nil
+        self._fetchedResultsController?.delegate = nil
         
         super.viewDidDisappear(animated)
     }
@@ -106,12 +110,20 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         
+        var count = 0
+        
         if let sections = self.fetchedResultsController.sections{
-            let count = sections.count
-            
-            return count
+            count = sections.count
         }
-        return 0
+        if count == 0 && noDataInfo != nil {
+            count = 1
+        }
+        
+        if count < minSectionCount{
+            count = minSectionCount
+        }
+        
+        return count
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -125,16 +137,26 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 count = sectionInfo.numberOfObjects
             }
         }
+        if count == 0 && noDataInfo != nil {
+            count = 1
+        }
         return count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
+        if let sections = self.fetchedResultsController.sections, sections.count > 0, let _ = self.object(at: indexPath)  {
+            let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
+            
+            self.configureCell(cell, atIndexPath: indexPath)
+            
+            return cell
+        }
         
-        self.configureCell(cell, atIndexPath: indexPath)
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: self.emptyCellIdentifier, for: indexPath)
+        self.configureEmptyCell(cell, atIndexPath: indexPath)
         return cell
+        
     }
     
     // MARK: UITableView Delegate
@@ -151,26 +173,31 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        log("time to override this method ->", "func configureCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
         
         if let object = self.object(at: indexPath) {
         
             cell.textLabel?.text = object.objectID.description
         }
     }
-    
+    func configureEmptyCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath) {
+        cell.selectionStyle = .none
+        if let info = noDataInfo {
+            cell.textLabel?.text = info
+        }
+    }
     func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        log("time to override this method ->", "func startCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
     }
     func updateCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
-        print("time to override this method ->", "func updateCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
+        log("time to override this method ->", "func updateCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)")
         
         
     }
     func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath){
         
-        print("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
+        log("time to override this method ->", "func unloadCell(_ cell: UITableViewCell, atIndexPath indexPath: IndexPath)\n Dont forget to NotificationCenter.default.removeObserver(cell) ")
         
         NotificationCenter.default.removeObserver(cell)
     }
@@ -232,10 +259,12 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
 
         do {
             try resultController.performFetch()
+            
+            self.refreshHeader()
             return true
         } catch {
             let fetchError = error as NSError
-            print("\(fetchError), \(fetchError.userInfo)")
+            log("\(fetchError), \(fetchError.userInfo)")
         }
         return false
     }
@@ -264,8 +293,11 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     }
     func allObjects(for section:Int) -> [NSManagedObject] {
         
-        if let sectionObjects = self.fetchedResultsController.sections?[section].objects as? [NSManagedObject]{
-            return sectionObjects
+        if let sections = self.fetchedResultsController.sections, sections.count > section {
+        
+            if let sectionObjects = sections[section].objects as? [NSManagedObject]{
+                return sectionObjects
+            }
         }
         return [NSManagedObject]()
     }
@@ -289,10 +321,12 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             
             switch(type) {
             case .insert:
+//                log("insert section \(sectionIndex)")
                 self.tableView?.insertSections(IndexSet(integer: sectionIndex), with: .middle)
                 break
                 
             case .delete:
+//                log("delete section \(sectionIndex)")
                 self.tableView?.deleteSections(IndexSet(integer: sectionIndex), with: .middle)
                 break
             default:
@@ -308,14 +342,14 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             switch(type) {
             case .insert:
                 if let newIndexPath = newIndexPath {
-//                    print("insert \(newIndexPath)")
+//                    log("insert \(newIndexPath)")
                     self.tableView?.insertRows(at: [newIndexPath], with: .middle)
                 }
                 break;
                 
             case .delete:
                 if let indexPath = indexPath {
-//                    print("delete \(indexPath)")
+//                    log("delete \(indexPath)")
                     let cell = self.tableView?.cellForRow(at: indexPath)
                     
                     NotificationCenter.default.removeObserver(cell as Any)
@@ -326,14 +360,9 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 
             case .update:
                 if let indexPath = indexPath {
-//                    print("update \(indexPath)")
-                    if let cell = self.tableView?.cellForRow(at: (indexPath)) {
+//                    log("update \(indexPath)")
+                    if let cell = self.tableView?.cellForRow(at: indexPath) {
                         
-//                        NotificationCenter.default.removeObserver(cell)
-//                        
-//                        self.configureCell(cell, atIndexPath: indexPath)
-//                        
-//                        self.startCell(cell, atIndexPath:indexPath)
                         
                         self.updateCell(cell, atIndexPath:indexPath)
                     }
@@ -341,9 +370,16 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 break;
                 
             case .move:
-                if let deleteIndexPath = indexPath, let insertIndexPath = newIndexPath {
-//                    print("move \(indexPath)")
-                    self.tableView?.moveRow(at: deleteIndexPath, to: insertIndexPath)
+                if let from = indexPath, let to = newIndexPath {
+//                    log("move \(from) to \(to)")
+                    
+                    if let cell = self.tableView?.cellForRow(at: from) {
+                        self.updateCell(cell, atIndexPath:from)
+                    }
+                    
+                    self.tableView?.moveRow(at: from, to: to)
+                    
+                    
                 }
 //                if let deleteIndexPath = indexPath {
 //                    self.tableView?.deleteRows(at: [deleteIndexPath], with: .none)
@@ -355,17 +391,41 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
 //                }
                 break;
             }
+            self.refreshHeader()
         }
     }
     
     internal func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if (self.navigationController == nil || (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))!)) && self.dynamicUpdate == true{
-                
-                self.tableView?.endUpdates()
+        
+        if (self.navigationController == nil ||
+            (self.navigationController != nil && (self.navigationController?.viewControllers.last?.isEqual(self))!)) && self.dynamicUpdate == true{
             
+            self.tableView?.endUpdates()
+            
+//            if noDataInfo != nil {
+//
+//                let sectionNumbers = self.numberOfSections(in: self.tableView)
+//
+//                if let sections = self.fetchedResultsController.sections{
+//                    for s in 0..<sectionNumbers{
+//
+//                        if sections.count > s {
+//
+//                            let sectionInfo = sections[s]
+//
+//                            if sectionInfo.numberOfObjects == 1 {
+//                                self.tableView.reloadSections(IndexSet(integer: s), with: .automatic)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+            
+            
+            self.refreshHeader()
         }else{
             self.tableView?.reloadData()
-            
+            self.refreshHeader()
             self.dynamicUpdate = true
         }
     }

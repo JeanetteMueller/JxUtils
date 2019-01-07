@@ -11,7 +11,7 @@ import UIKit
 extension UIViewController {
     
     @objc func updateAppearance(){
-        print("override this")
+        log("override this")
     }
 }
 
@@ -57,7 +57,7 @@ extension UIView {
             let shouldBeValue = params[key] as Any
             
             if compare(a: isValue, b:shouldBeValue) == false{
-                print("key ist nicht identisch", key)
+//                log("key ist nicht identisch", key)
                 
                 animate = true
             }
@@ -83,6 +83,56 @@ extension UIView {
                 anim.beginTime = CACurrentMediaTime() + (duration * 0.18)
                 self.layer.add(anim, forKey: "shadowRadius")
             }
+            
+//            self.layer.removeAllAnimations()
+//            self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1, y: 1));
+//            view.layoutIfNeeded()
+            
+            //gestapelt da UIView.animateKeyframes manchmal probleme ausgelöst hat
+            
+//            UIView.animate(withDuration: duration * 0.18, animations: {
+//                // run 1
+//                self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 0, y: 0));
+//                view.layoutIfNeeded()
+//
+//            }) { (done) in
+//                // done 1
+//                for key in params.keys{
+//                    self.setValue(params[key], forKeyPath:key)
+//                }
+//                UIView.animate(withDuration: duration * 0.25, animations: {
+//                    // run 2
+//                    if let flash = flashColor{
+//                        self.backgroundColor = flash
+//                    }
+//                    self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1.15, y: 1.15))
+//                    view.layoutIfNeeded()
+//                }) { (done) in
+//                    // done 2
+//                    UIView.animate(withDuration: duration * 0.25, animations: {
+//                        // run 3
+//                        self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 0.9, y: 0.9))
+//                        view.layoutIfNeeded()
+//                    }) { (done) in
+//                        // done 3
+//                        UIView.animate(withDuration: duration * 0.32, animations: {
+//                            // run 4
+//                            if let back = params["backgroundColor"] as? UIColor{
+//                                self.backgroundColor = back
+//                            }
+//
+//                            self.transform = originalTransform.concatenating(CGAffineTransform(scaleX: 1, y: 1))
+//                            view.layoutIfNeeded()
+//                        }) { (done) in
+//                            // done 4
+//                            if let b = completionBlock{
+//                                b()
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+            
             
             UIView.animateKeyframes(withDuration: duration,
                                     delay: 0,
