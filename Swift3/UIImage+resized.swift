@@ -33,7 +33,7 @@ extension UIImage {
         
         return imageDir.appending("/").appending(urlString.md5())
     }
-    class func getImage(withImageString imageString:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
+    class func getImage(withImageString imageString:String, andSize size:CGSize?, withMode mode:UIView.ContentMode, useCache cache:Bool = true) -> UIImage?{
         
         if let i = UIImage(named: imageString){
             return i
@@ -41,10 +41,10 @@ extension UIImage {
         
         let imagePath = UIImage.getFilePath(withUrlString: imageString)
         
-        return UIImage.getImage(withImagePath: imagePath, andSize: size, useCache: cache)
+        return UIImage.getImage(withImagePath: imagePath, andSize: size, withMode: mode, useCache: cache)
 
     }
-    class func getImage(withImagePath imagePath:String, andSize size:CGSize?, useCache cache:Bool = true) -> UIImage?{
+    class func getImage(withImagePath imagePath:String, andSize size:CGSize?, withMode mode:UIView.ContentMode, useCache cache:Bool = true) -> UIImage?{
         var useSize:CGSize
         
         if var mySize = size {
@@ -65,7 +65,7 @@ extension UIImage {
         }
         
         var image:UIImage? = nil
-        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize, useCache: cache){
+        if let imagePathWithSize = UIImage.pathToResizedImage(fromPath: imagePath, toSize: useSize, withMode: mode, useCache: cache){
             
             if let storedImage = UIImageCache.shared.object(forKey: imagePathWithSize as NSString){
                 return storedImage
@@ -81,15 +81,17 @@ extension UIImage {
         }
         return nil
     }
-    class func pathToResizedImage(fromUrl urlString:String, toSize size:CGSize) -> String? {
+    class func pathToResizedImage(fromUrl urlString:String, toSize size:CGSize, withMode mode:UIView.ContentMode) -> String? {
         let sourcePath = UIImage.getFilePath(withUrlString:urlString)
         
-        return UIImage.pathToResizedImage(fromPath: sourcePath, toSize: size)
+        return UIImage.pathToResizedImage(fromPath: sourcePath, toSize: size, withMode: mode)
     }
-    class func pathToResizedImage(fromPath path:String, toSize size:CGSize, fileExtension ext:String = "png", useCache cache:Bool = true) -> String? {
+    class func pathToResizedImage(fromPath path:String, toSize size:CGSize, withMode mode:UIView.ContentMode, fileExtension ext:String = "png", useCache cache:Bool = true) -> String? {
         if FileManager.default.fileExists(atPath: path) {
 
-            let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height)).appending(".").appending(ext)
+            let modeString = String(format: "mode_%d", mode.rawValue)
+            
+            let newFilename = path.appending("_").appendingFormat("%d", Int(size.width)).appending("-").appendingFormat("%d", Int(size.height)).appending("-").appending(modeString).appending(".").appending(ext)
             
             if FileManager.default.fileExists(atPath: newFilename) {
                 //log("resized file exitiert schon", newFilename)
@@ -119,7 +121,7 @@ extension UIImage {
             
             if let original = UIImage(contentsOfFile: originalImagePath){
                 
-                if let saveImage = UIImage.createImage(fromOriginal: original, withSize: size) {
+                if let saveImage = UIImage.createImage(fromOriginal: original, withSize: size, withMode: mode) {
                     
                     if let imageData = saveImage.pngData() as NSData?{
                     
@@ -148,7 +150,7 @@ extension UIImage {
         return nil
     }
     
-    class func createImage(fromOriginal original: UIImage, withSize size:CGSize) -> UIImage?{
+    class func createImage(fromOriginal original: UIImage, withSize size:CGSize, withMode mode:UIView.ContentMode) -> UIImage?{
 //        log("create resized image")
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         
@@ -159,15 +161,53 @@ extension UIImage {
         
         //max zeigt ganzes bild mit schwarzen balken
         //min vergrößert das bild und schneidet den rest ab
-        let ratio = min(ratioX, ratioY)
         
-        let newWidth = original.size.width/ratio
-        let newHeight = original.size.height/ratio
+        var ratio:CGFloat = 0
         
-        original.draw(in: CGRect(x: (size.width - newWidth) / 2,
-                                 y: (size.height - newHeight) / 2,
-                                 width: newWidth,
-                                 height: newHeight))
+        switch mode {
+        case .scaleAspectFill, .scaleToFill:
+            ratio = min(ratioX, ratioY)
+            
+            let newWidth = original.size.width/ratio
+            let newHeight = original.size.height/ratio
+            
+            original.draw(in: CGRect(x: (size.width - newWidth) / 2,
+                                     y: (size.height - newHeight) / 2,
+                                     width: newWidth,
+                                     height: newHeight))
+            
+            
+        default:
+            ratio = max(ratioX, ratioY)
+            
+            var originX: CGFloat = 0
+            var originY: CGFloat = 0
+            let sizeWidth: CGFloat = original.size.width/ratio
+            let sizeHeight: CGFloat = original.size.height/ratio
+            
+            switch mode {
+                
+            case .top:
+                originX = (size.width - sizeWidth) / 2
+                originY = 0
+                break
+            case .bottom:
+                originX = (size.width - sizeWidth) / 2
+                originY = size.height - sizeHeight
+                break
+            default:
+                originX = (size.width - sizeWidth) / 2
+                originY = (size.height - sizeHeight) / 2
+                break;
+            }
+            
+            original.draw(in: CGRect(x: originX,
+                                     y: originY,
+                                     width: sizeWidth,
+                                     height: sizeHeight))
+        }
+        
+        
         
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         
