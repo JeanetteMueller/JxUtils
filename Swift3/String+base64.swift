@@ -8,6 +8,15 @@
 
 import Foundation
 
+extension Data {
+    //: ### Base64 encoding a string
+    func base64Encoded() -> String {
+        return self.base64EncodedString()
+    }
+    func base64_Encoded() -> String {
+        return self.base64Encoded()
+    }
+}
 extension String {
     //: ### Base64 encoding a string
     func base64Encoded() -> String? {
@@ -18,10 +27,19 @@ extension String {
     }
     
     //: ### Base64 decoding a string
-    func base64Decoded() -> String? {
+    func base64Decoded() -> Data? {
         if let data = Data(base64Encoded: self) {
-            return String(data: data, encoding: .utf8)
+            return data
         }
         return nil
+    }
+
+    func base64_Encoded() -> String? {
+        return self.base64Encoded()
+    }
+
+    //: ### Base64 decoding a string
+    func base64_Decoded() -> Data? {
+        return self.base64Decoded()
     }
 }

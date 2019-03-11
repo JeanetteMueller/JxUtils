@@ -26,13 +26,21 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     var sortDescriptors = [NSSortDescriptor]()
     
     var fetchLimit:Int = 0
+
+    var propertiesToFetch: [String]? = nil
     
     var firstTimeOpened = true
     
     var dynamicUpdate = true
     
-    var noDataInfo: String? = nil
+    var noDataInfo: String? {
+        didSet{
+            self.noContentView.text = noDataInfo
+        }
+    }
     var minSectionCount: Int = 0
+    
+    var noContentView = UILabel()
     
     override var canBecomeFirstResponder: Bool {
         return true
@@ -59,12 +67,42 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.noContentView.textAlignment = .center
+        self.noContentView.isHidden = true
+        self.noContentView.numberOfLines = 0
+        self.noContentView.frame = CGRect(x: self.tableView.bounds.origin.x,
+                                          y: self.tableView.bounds.origin.y + (self.tableView.tableHeaderView?.bounds.size.height ?? 0),
+                                          width: self.tableView.bounds.size.width,
+                                          height: self.tableView.rowHeight)
+        self.noContentView.backgroundColor = UIColor.clear //.withAlphaComponent(0.5)
+        self.view.addSubview(noContentView)
+        
+        self.view.bringSubviewToFront(noContentView)
         
         // Uncomment the following line to preserve selection between presentations
         self.clearsSelectionOnViewWillAppear = true
         
  
     }
+    override func updateAppearance() {
+        super.updateAppearance()
+        
+        let theme = ThemeManager.currentTheme()
+        
+        self.noContentView.text = noDataInfo ?? "–"
+        self.noContentView.textColor = theme.highlightTextColor
+        self.noContentView.font = UIFont(name: kFontRegular, size: 16)
+        self.noContentView.frame = CGRect(x: self.tableView.bounds.origin.x,
+                                          y: self.tableView.bounds.origin.y + (self.tableView.tableHeaderView?.bounds.size.height ?? 0),
+                                          width: self.tableView.bounds.size.width,
+                                          height: self.tableView.rowHeight)
+    }
+//    override func updateViewConstraints() {
+//
+//        self.noContentView.autoPinEdgesToSuperviewMargins()
+//
+//        super.updateViewConstraints()
+//    }
     func refreshHeader() {
         
     }
@@ -115,9 +153,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         if let sections = self.fetchedResultsController.sections{
             count = sections.count
         }
-        if count == 0 && noDataInfo != nil {
-            count = 1
-        }
         
         if count < minSectionCount{
             count = minSectionCount
@@ -136,9 +171,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 
                 count = sectionInfo.numberOfObjects
             }
-        }
-        if count == 0 && noDataInfo != nil {
-            count = 1
         }
         return count
     }
@@ -209,21 +241,29 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             
             return fetchedResultsController
         }
-        
-        let fetchRequest:NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: self.entityName!)
-        fetchRequest.returnsObjectsAsFaults = false
-        fetchRequest.fetchBatchSize = 10
-        
-        if self.sortDescriptors.count > 0 {
-            fetchRequest.sortDescriptors = sortDescriptors;
-        }
-        
         if let context = self.managedObjectContext{
+            let fetchRequest:NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: self.entityName!)
+ 
+
+            if let properties = propertiesToFetch {
+                fetchRequest.returnsObjectsAsFaults = true
+                fetchRequest.propertiesToFetch = properties
+            } else {
+                fetchRequest.returnsObjectsAsFaults = false
+            }
+
+            fetchRequest.fetchBatchSize = 10
+
+            if self.sortDescriptors.count > 0 {
+                fetchRequest.sortDescriptors = sortDescriptors;
+            }
+
+
             let aFetchedResultsController:NSFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                                                                   managedObjectContext: context,
                                                                                                   sectionNameKeyPath: self.sectionKeyPath,
                                                                                                   cacheName: nil )
-            
+
             aFetchedResultsController.delegate = self
             _fetchedResultsController = aFetchedResultsController
         }
@@ -257,10 +297,25 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
             resultController.fetchRequest.fetchLimit = self.fetchLimit
         }
 
+        if let properties = propertiesToFetch {
+            resultController.fetchRequest.returnsObjectsAsFaults = true
+            resultController.fetchRequest.propertiesToFetch = properties
+        } else {
+            resultController.fetchRequest.returnsObjectsAsFaults = false
+        }
+
         do {
             try resultController.performFetch()
             
             self.refreshHeader()
+            
+            if let objects = resultController.fetchedObjects, objects.count > 0 {
+                //inhalt ist da, wird angezeigt
+                hideNoContentView()
+            }else{
+                showNoContentView()
+            }
+            
             return true
         } catch {
             let fetchError = error as NSError
@@ -268,7 +323,12 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
         }
         return false
     }
-    
+    func showNoContentView() {
+        self.noContentView.isHidden = false
+    }
+    func hideNoContentView() {
+        self.noContentView.isHidden = true
+    }
     func object(at indexPath: IndexPath) -> NSManagedObject?{
         
         if let sections = self.fetchedResultsController.sections, sections.count > indexPath.section {
@@ -362,8 +422,6 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
                 if let indexPath = indexPath {
 //                    log("update \(indexPath)")
                     if let cell = self.tableView?.cellForRow(at: indexPath) {
-                        
-                        
                         self.updateCell(cell, atIndexPath:indexPath)
                     }
                 }

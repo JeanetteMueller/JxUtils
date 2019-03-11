@@ -23,7 +23,9 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
     var searchPredicate: NSPredicate?
     var sortDescriptors = [NSSortDescriptor]()
     var fetchLimit:Int = 0
-    
+
+    var propertiesToFetch: [String]? = nil
+
     var firstTimeOpened = true
     var dynamicUpdate = true
     
@@ -189,7 +191,13 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         }
         
         let fetchRequest:NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: self.entityName!)
-        fetchRequest.returnsObjectsAsFaults = false
+
+        if let properties = propertiesToFetch {
+            fetchRequest.propertiesToFetch = properties
+        } else {
+            fetchRequest.returnsObjectsAsFaults = false
+        }
+
         fetchRequest.fetchBatchSize = 10
         
         if self.sortDescriptors.count > 0 {
@@ -232,6 +240,12 @@ class JxFetchResultCollectionViewController: PCCollectionViewController, NSFetch
         resultController.fetchRequest.fetchLimit = 0
         if self.fetchLimit > 0 {
             resultController.fetchRequest.fetchLimit = self.fetchLimit
+        }
+        
+        if let properties = propertiesToFetch {
+            resultController.fetchRequest.propertiesToFetch = properties
+        } else {
+            resultController.fetchRequest.returnsObjectsAsFaults = false
         }
         
         do {

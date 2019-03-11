@@ -313,7 +313,21 @@ extension String {
 
     var htmlDecoded: String? {
 
-        return self.stringByDecodingHTMLEntities
+        let string = self.stringByDecodingHTMLEntities
+        
+        if let data = string.data(using: .utf8) {
+            do {
+                let decoded = try NSAttributedString(data: data, options: [
+                    .documentType: NSAttributedString.DocumentType.html,
+                    .characterEncoding: String.Encoding.utf8.rawValue
+                    ], documentAttributes: nil).string
+                
+                return decoded
+            }catch let error as NSError {
+                print("problem beim decoden", error as Any)
+            }
+        }
+        return string
     }
     
     var stringByDecodingHTMLEntities : String {
