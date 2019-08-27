@@ -23,15 +23,12 @@ extension UIDevice {
 //        if #available(iOS 11.0, *) {
 //            return UIApplication.shared.delegate?.window??.safeAreaInsets != .zero
 //        }
-        
-        if Device() == .iPhoneX ||
-            Device() == .iPhoneXs ||
-            Device() == .iPhoneXsMax ||
-            Device() == .iPhoneXr{
+
+        if Device.allDevicesWithSensorHousing.contains(Device.current) {
             return true
         }
-        
-        
+
+
         return false
     }
     

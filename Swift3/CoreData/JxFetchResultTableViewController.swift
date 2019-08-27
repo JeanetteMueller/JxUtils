@@ -448,6 +448,9 @@ class JxFetchResultTableViewController: PCTableViewController, NSFetchedResultsC
 //                    self.tableView?.insertRows(at: [insertIndexPath], with: .none)
 //                }
                 break;
+            @unknown default:
+                //keine ahnung, nix tun
+                break
             }
             self.refreshHeader()
         }

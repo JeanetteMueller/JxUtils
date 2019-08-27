@@ -40,7 +40,9 @@ extension UIImage {
         }
         
         let imagePath = UIImage.getFilePath(withUrlString: imageString)
-        
+        if !FileManager.default.fileExists(atPath: imagePath){
+            return nil
+        }
         return UIImage.getImage(withImagePath: imagePath, andSize: size, withMode: mode, useCache: cache)
 
     }

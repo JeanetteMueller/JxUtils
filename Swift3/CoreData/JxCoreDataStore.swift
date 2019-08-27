@@ -46,7 +46,18 @@ class JxCoreDataStore:NSObject {
             
             try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: url, options: options)
         } catch let  error as NSError {
-            log("Ops there was an error \(error.localizedDescription)")
+            let failureReason = "Ops there was an error \(error.localizedDescription)"
+            log(failureReason)
+
+            var dict = [String: AnyObject]()
+            dict[NSLocalizedDescriptionKey] = "Failed to initialize the application's saved data" as AnyObject
+            dict[NSLocalizedFailureReasonErrorKey] = failureReason as AnyObject
+
+            dict[NSUnderlyingErrorKey] = error as NSError
+            let wrappedError = NSError(domain: "de.themaverick.podcat", code: 9999, userInfo: dict)
+            // Replace this with code to handle the error appropriately.
+            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            NSLog("Unresolved error \(wrappedError), \(wrappedError.userInfo)")
             abort()
         }
         return coordinator
@@ -105,16 +116,24 @@ class JxCoreDataStore:NSObject {
             block(self.mainManagedObjectContext)
         }
     }
-    
+
+    var privateBackgroundContext:NSManagedObjectContext? = nil
+
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
-        
-            //self.persistentContainer.performBackgroundTask(block)
-            
-            self.persistentContainer.performBackgroundTask({ (context) in
-                context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-                
-                block(context)
-            })
+
+//        if self.privateBackgroundContext == nil {
+//            self.privateBackgroundContext = self.newPrivateContext()
+//        }
+//        if let c = self.privateBackgroundContext {
+//            c.perform {
+//                block(c)
+//            }
+//        }
+        self.persistentContainer.performBackgroundTask({ (context) in
+            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+            block(context)
+        })
     }
     
     func deleteDatabasse(){
@@ -168,6 +187,18 @@ class JxCoreDataStore:NSObject {
             
             container.loadPersistentStores(completionHandler: { (description, error) in
                 if let error = error {
+                    // Replace this implementation with code to handle the error appropriately.
+                    // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+
+                    /*
+                     Typical reasons for an error here include:
+                     * The parent directory does not exist, cannot be created, or disallows writing.
+                     * The persistent store is not accessible, due to permissions or data protection when the device is locked.
+                     * The device is out of space.
+                     * The store could not be migrated to the current model version.
+                     Check the error message to determine what the actual problem was.
+                     */
+                    
                     let e = error as NSError
                     log("CoreData error", error, e.userInfo as Any)
                     
@@ -175,8 +206,6 @@ class JxCoreDataStore:NSObject {
                     defaults.set(error.localizedDescription, forKey: "CoreDataError")
                     defaults.set(nil, forKey: "firstStart")
                     defaults.synchronize()
-                    
-                    self.deleteDatabasse()
                     
                     abort()
                 }
